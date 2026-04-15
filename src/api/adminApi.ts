@@ -1,9 +1,8 @@
-  var API_BASE_URL = import.meta.env.VITE_API_URL || '';
-
-
- API_BASE_URL = 'https://api.markensecondhand.com';
+//var API_BASE_URL = import.meta.env.VITE_API_URL || '';
+//API_BASE_URL = 'https://api.markensecondhand.com';
 //API_BASE_URL = 'http://localhost:5000'
 //API_BASE_URL = '';*/
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 console.log('API BASE URL:', API_BASE_URL);
 

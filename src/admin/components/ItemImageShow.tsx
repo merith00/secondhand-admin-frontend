@@ -2,7 +2,7 @@ type Props = {
   imageUrl?: string | null;
 };
 
-const BACKEND_BASE_URL = 'http://localhost:5000';
+const BACKEND_BASE_URL = import.meta.env.VITE_API_BASE_URL  || 'http://localhost:5000';
 
 export default function ItemImageShow({ imageUrl }: Props) {
   if (!imageUrl) {
