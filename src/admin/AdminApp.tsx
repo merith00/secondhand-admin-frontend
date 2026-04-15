@@ -35,7 +35,8 @@ import {
   fetchCustomers,
   fetchItems,
   fetchSales,
-  uploadItemImage
+  uploadItemImage,
+  updateItem
 } from '../api/adminApi';
 
 function App() {
@@ -85,6 +86,7 @@ function App() {
     sale_type: 'store',
     payment_method: 'cash',
     notes: '',
+    buyer_customer_id: '',
   });
 
   /*return (
@@ -92,6 +94,25 @@ function App() {
       TEST APP STARTET
     </div>
   );*/
+
+  async function handleToggleOnline(itemId: number, isVisible: boolean) {
+    try {
+      await updateItem(itemId, {
+        is_online_visible: isVisible ? 1 : 0,
+      });
+
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === itemId
+            ? { ...item, is_online_visible: isVisible ? 1 : 0 }
+            : item
+        )
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
 
   async function loadCustomers() {
     try {
@@ -272,6 +293,7 @@ function App() {
         sale_type: saleFormData.sale_type,
         payment_method: saleFormData.payment_method,
         notes: saleFormData.notes,
+        buyer_customer_id: Number(saleFormData.buyer_customer_id),
       });
 
       setSaleFormData({
@@ -280,6 +302,7 @@ function App() {
         sale_type: 'store',
         payment_method: 'cash',
         notes: '',
+        buyer_customer_id: '',
       });
 
       await loadSales();
@@ -348,9 +371,9 @@ function App() {
           <ItemTable
             items={items}
             loading={loadingItems}
-            onReload={loadItems} setItems={function (value: SetStateAction<Item[]>): void {
-              throw new Error('Function not implemented.');
-            }} />
+            onReload={loadItems}
+            onToggleOnline={handleToggleOnline}
+          />
         </div>
       )}
 
@@ -358,6 +381,7 @@ function App() {
         <div className="content-grid">
           <SaleForm
             formData={saleFormData}
+            customers={customers}
             items={items}
             onChange={handleSaleChange}
             onSubmit={handleSaleSubmit}

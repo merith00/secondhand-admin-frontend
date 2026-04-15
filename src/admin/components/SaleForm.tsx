@@ -1,7 +1,9 @@
-import type { Item, SaleFormData } from '../../types';
+import type { Customer, Item, SaleFormData } from '../../types';
+
 
 type SaleFormProps = {
   formData: SaleFormData;
+  customers: Customer[];
   items: Item[];
   onChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -11,6 +13,7 @@ type SaleFormProps = {
 
 export default function SaleForm({
   formData,
+  customers,
   items,
   onChange,
   onSubmit,
@@ -20,6 +23,9 @@ export default function SaleForm({
   );
 
   return (
+
+    
+
     <section className="card">
       <h3>Verkauf erfassen</h3>
 
@@ -37,6 +43,20 @@ export default function SaleForm({
             </option>
           ))}
         </select>
+
+                <select
+        name="buyer_customer_id"
+          value={formData.buyer_customer_id}
+          onChange={onChange}
+        >
+          <option value="">Käufer auswählen</option>
+          {customers.map((customer) => (
+            <option key={customer.id} value={customer.id}>
+              {customer.customer_number} - {customer.first_name} {customer.last_name}
+            </option>
+          ))}
+        </select>
+
 
         <input
           name="sale_price"

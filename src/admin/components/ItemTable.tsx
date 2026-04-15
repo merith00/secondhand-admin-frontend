@@ -5,14 +5,17 @@ type ItemTableProps = {
   items: Item[];
   loading: boolean;
   onReload: () => void;
-  setItems: React.Dispatch<React.SetStateAction<Item[]>>;
+  onToggleOnline: (itemId: number, isVisible: boolean) => void;
 };
 
 export default function ItemTable({
   items,
   loading,
   onReload,
+  onToggleOnline,
 }: ItemTableProps) {
+
+
   return (
     <section className="card">
       <div className="card-header">
@@ -37,6 +40,7 @@ export default function ItemTable({
                 <th>Farbe</th>
                 <th>Preis</th>
                 <th>Eigentümer</th>
+                <th>Im Onlineshop</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -56,6 +60,13 @@ export default function ItemTable({
                     {item.first_name} {item.last_name}
                   </td>
                   <td>
+                    <input
+                      type="checkbox"
+                      checked={item.is_online_visible === 1}
+                      onChange={(e) => onToggleOnline(item.id, e.target.checked)}
+                    />
+                  </td>
+                  <td>
                     <span className="badge neutral">{item.status}</span>
                   </td>
                 </tr>
@@ -73,3 +84,4 @@ export default function ItemTable({
     </section>
   );
 }
+

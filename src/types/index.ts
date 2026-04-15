@@ -81,6 +81,7 @@ export type SaleFormData = {
   sale_type: 'store' | 'online';
   payment_method: 'cash' | 'bank_transfer';
   notes: string;
+  buyer_customer_id: string;
 };
 
 export type CustomerCredit = {
@@ -90,6 +91,9 @@ export type CustomerCredit = {
   last_name: string;
   sold_items_count: number;
   credit_balance: number;
+  total_credit_earned: number;
+  total_credit_spent: number;
+  bought_items_count: number;
 };
 
 export type ShopItem = {

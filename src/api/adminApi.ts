@@ -90,6 +90,7 @@ export async function createSale(sale: {
   sale_type: 'store' | 'online';
   payment_method: 'cash' | 'bank_transfer';
   notes?: string;
+  buyer_customer_id: number;
 }) {
   const response = await fetch(`${API_BASE_URL}/api/sales`, {
     method: 'POST',
@@ -145,4 +146,19 @@ export async function deleteItemImage(itemId: number) {
   }
 
   return response.json();
+}
+
+export async function updateItem(
+  itemId: number,
+  updates: { is_online_visible?: number }
+) {
+  const response = await fetch(`${API_BASE_URL}/api/items/${itemId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updates),
+  });
+
+  return handleResponse(response);
 }
