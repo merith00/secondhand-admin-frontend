@@ -54,6 +54,8 @@ function App() {
   const [loadingShopOrders, setLoadingShopOrders] = useState(false);
   const [selectedItemImage, setSelectedItemImage] = useState<File | null>(null);
 
+  const [showCustomerForm, setShowCustomerForm] = useState(true);
+
   const [error, setError] = useState('');
 
   const [customerFormData, setCustomerFormData] = useState<CustomerFormData>({
@@ -88,12 +90,6 @@ function App() {
     notes: '',
     buyer_customer_id: '',
   });
-
-  /*return (
-    <div style={{ padding: 20, color: 'black' }}>
-      TEST APP STARTET
-    </div>
-  );*/
 
   async function handleToggleOnline(itemId: number, isVisible: boolean) {
     try {
@@ -332,25 +328,41 @@ function App() {
 
       {activeView === 'customers' && (
         <div className="customer-page">
-          <div className="content-grid">
-            <CustomerForm
-              formData={customerFormData}
-              onChange={handleCustomerChange}
-              onSubmit={handleCustomerSubmit}
-            />
+          <div className="content-grid ">
+            <div className="card">
+              <div
+                className="card-header clickable"
+                onClick={() => setShowCustomerForm((prev) => !prev)}
+              >
+                <h3>Neuen Kunden anlegen</h3>
 
-            <CustomerTable
-              customers={customers}
-              loading={loadingCustomers}
-              onReload={loadCustomers}
-            />
-          </div>
+                <span className={`chevron ${showCustomerForm ? 'open' : ''}`}>
+                  ▼
+                </span>
+              </div>
 
-          <div className="section-spacing">
+              {showCustomerForm && (
+                <CustomerForm
+                  formData={customerFormData}
+                  onChange={handleCustomerChange}
+                  onSubmit={handleCustomerSubmit}
+                />
+              )}
+            </div>
+
+
             <CustomerCreditsTable
               credits={customerCredits}
               loading={loadingCustomerCredits}
               onReload={loadCustomerCredits}
+            />
+          </div>
+
+          <div className="section-spacing">
+            <CustomerTable
+              customers={customers}
+              loading={loadingCustomers}
+              onReload={loadCustomers}
             />
           </div>
         </div>

@@ -12,8 +12,7 @@ export default function CustomerForm({
   onSubmit,
 }: CustomerFormProps) {
   return (
-    <section className="card">
-      <h3>Neuen Kunden anlegen</h3>
+
 
       <form className="form-grid" onSubmit={onSubmit}>
         <input
@@ -57,6 +56,5 @@ export default function CustomerForm({
           Kunde speichern
         </button>
       </form>
-    </section>
   );
 }
