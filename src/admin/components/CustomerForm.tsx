@@ -15,6 +15,15 @@ export default function CustomerForm({
 
 
       <form className="form-grid" onSubmit={onSubmit}>
+
+        <input
+          name="customer_number"
+          placeholder="Kundennummer"
+          value={formData.customer_number}
+          onChange={onChange}
+          required
+        />
+
         <input
           name="first_name"
           placeholder="Vorname"

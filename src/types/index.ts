@@ -37,6 +37,7 @@ export type Item = {
 
 
 export type CustomerFormData = {
+  customer_number: string;
   first_name: string;
   last_name: string;
   city: string;

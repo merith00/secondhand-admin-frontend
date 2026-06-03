@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import type { Customer, ItemFormData } from '../../types';
 
 type ItemFormProps = {
@@ -11,6 +11,11 @@ type ItemFormProps = {
   ) => void;
   onCheckboxChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSubmit: (e: React.FormEvent) => void;
+  onTakePhoto: () => void;
+  onPickPhoto: () => void;
+  imagePreview?: string;
+  isUploadingImage?: boolean;
+  isNativeMobile?: boolean;
 };
 
 export default function ItemForm({
@@ -21,11 +26,22 @@ export default function ItemForm({
   onChange,
   onCheckboxChange,
   onSubmit,
+  onTakePhoto,
+  onPickPhoto,
+  imagePreview,
+  isUploadingImage,
+  isNativeMobile,
 }: ItemFormProps) {
   const previewUrl = useMemo(() => {
     if (!selectedImage) return null;
     return URL.createObjectURL(selectedImage);
   }, [selectedImage]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   return (
     <section className="card">
@@ -100,11 +116,57 @@ export default function ItemForm({
           required
         />
 
-        <input
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          onChange={(e) => onImageChange(e.target.files?.[0] || null)}
-        />
+        <div className="form-group image-upload-group">
+          <label>Bild</label>
+
+          {!isNativeMobile && (
+            <div className="image-upload-desktop">
+              <label className="file-upload-btn">
+                📁 Bild auswählen
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={(e) => onImageChange(e.target.files?.[0] || null)}
+                  hidden
+                />
+              </label>
+            </div>
+          )}
+
+          {isNativeMobile && (
+            <div className="image-upload-mobile">
+              <button
+                type="button"
+                className="image-btn camera"
+                onClick={onTakePhoto}
+                disabled={isUploadingImage}
+              >
+                📸 Kamera
+              </button>
+
+              <button
+                type="button"
+                className="image-btn gallery"
+                onClick={onPickPhoto}
+                disabled={isUploadingImage}
+              >
+                🖼 Galerie
+              </button>
+            </div>
+          )}
+
+          {isUploadingImage && (
+            <div className="upload-status">
+              ⏳ Bild wird verarbeitet...
+            </div>
+          )}
+
+          {(imagePreview || previewUrl) && (
+            <div className="image-preview">
+              <img src={imagePreview || previewUrl || ''} alt="Preview" />
+            </div>
+          )}
+        </div>
 
         <label className="checkbox-row">
           <input
@@ -114,7 +176,6 @@ export default function ItemForm({
           />
           Im Onlineshop sichtbar
         </label>
-
 
         <button type="submit" className="primary-btn">
           Kleidungsstück speichern

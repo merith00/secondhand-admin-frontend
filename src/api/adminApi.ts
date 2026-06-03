@@ -34,6 +34,7 @@ export async function fetchCustomers() {
 }
 
 export async function createCustomer(customer: {
+  customer_number: string;
   first_name: string;
   last_name: string;
   city: string;
@@ -67,6 +68,7 @@ export async function createItem(item: {
   color?: string;
   price: number;
   is_online_visible: number;
+  image_url?: string;
 }) {
   const response = await fetch(`${API_BASE_URL}/api/items`, {
     method: 'POST',
@@ -118,9 +120,7 @@ export async function fetchShopOrders() {
 
 export async function uploadItemImage(itemId: number, file: File) {
   const formData = new FormData();
-  formData.append('image', file);
-
-  console.log('Uploading image for item', itemId, file);
+  formData.append('image', file, file.name);
 
   const response = await fetch(`${API_BASE_URL}/api/items/${itemId}/image`, {
     method: 'POST',
@@ -162,3 +162,4 @@ export async function updateItem(
 
   return handleResponse(response);
 }
+

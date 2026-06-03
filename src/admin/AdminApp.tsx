@@ -1,4 +1,4 @@
-import { useEffect, useState, type SetStateAction } from 'react';
+import { useEffect, useState } from 'react';
 import '../App.css';
 import Layout from './components/Layout';
 import CustomerForm from './components/CustomerForm';
@@ -14,6 +14,13 @@ import CustomerCreditsTable from './components/CustomerCreditsTable';
 import { fetchShopOrders } from '../api/adminApi';
 import ShopOrdersTable from './components/ShopOrdersTable';
 import type { AdminShopOrder } from '../types';
+
+import { Capacitor } from '@capacitor/core';
+import {
+  takePhotoWithCamera,
+  pickPhotoFromGallery,
+  webPathToBlob,
+} from '../utils/camera';
 
 
 import type {
@@ -56,9 +63,13 @@ function App() {
 
   const [showCustomerForm, setShowCustomerForm] = useState(true);
 
+  const [imagePreview, setImagePreview] = useState('');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
   const [error, setError] = useState('');
 
   const [customerFormData, setCustomerFormData] = useState<CustomerFormData>({
+    customer_number: '',
     first_name: '',
     last_name: '',
     city: '',
@@ -191,6 +202,7 @@ function App() {
       await createCustomer(customerFormData);
 
       setCustomerFormData({
+        customer_number: '',
         first_name: '',
         last_name: '',
         city: '',
@@ -227,6 +239,7 @@ function App() {
         await uploadItemImage(createdItem.id, selectedItemImage);
       }
 
+
       setItemFormData({
         owner_customer_id: '',
         title: '',
@@ -240,6 +253,7 @@ function App() {
       });
 
       setSelectedItemImage(null);
+      setImagePreview('');
 
       await loadItems();
     } catch (err: any) {
@@ -247,6 +261,61 @@ function App() {
     }
   }
 
+  const isNativeMobile = Capacitor.isNativePlatform();
+
+  async function handleTakePhoto() {
+    try {
+      setError('');
+      setIsUploadingImage(true);
+
+      const photo = await takePhotoWithCamera();
+
+      if (!photo.webPath) {
+        throw new Error('Kein Bildpfad vorhanden');
+      }
+
+      setImagePreview(photo.webPath);
+
+      const blob = await webPathToBlob(photo.webPath);
+      const file = new File([blob], `item-${Date.now()}.jpg`, {
+        type: blob.type || 'image/jpeg',
+      });
+
+      setSelectedItemImage(file);
+    } catch (error) {
+      console.error(error);
+      setError('Foto konnte nicht aufgenommen werden.');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  }
+
+  async function handlePickPhoto() {
+    try {
+      setError('');
+      setIsUploadingImage(true);
+
+      const photo = await pickPhotoFromGallery();
+
+      if (!photo.webPath) {
+        throw new Error('Kein Bildpfad vorhanden');
+      }
+
+      setImagePreview(photo.webPath);
+
+      const blob = await webPathToBlob(photo.webPath);
+      const file = new File([blob], `item-${Date.now()}.jpg`, {
+        type: blob.type || 'image/jpeg',
+      });
+
+      setSelectedItemImage(file);
+    } catch (error) {
+      console.error(error);
+      setError('Bild konnte nicht ausgewählt werden.');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  }
   function handleCustomerChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
 
@@ -254,6 +323,17 @@ function App() {
       ...prev,
       [name]: value,
     }));
+  }
+
+  function handleItemImageChange(file: File | null) {
+    setSelectedItemImage(file);
+
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImagePreview('');
+    }
+
   }
 
   function handleItemChange(
@@ -374,10 +454,15 @@ function App() {
             formData={itemFormData}
             customers={customers}
             selectedImage={selectedItemImage}
-            onImageChange={setSelectedItemImage}
+            onImageChange={handleItemImageChange}
             onChange={handleItemChange}
             onCheckboxChange={handleItemCheckboxChange}
             onSubmit={handleItemSubmit}
+            onTakePhoto={handleTakePhoto}
+            onPickPhoto={handlePickPhoto}
+            imagePreview={imagePreview}
+            isUploadingImage={isUploadingImage}
+            isNativeMobile={isNativeMobile}
           />
 
           <ItemTable
