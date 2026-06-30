@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 
 type LayoutProps = {
-  activeView: 'customers' | 'items' | 'sales' | 'orders';
-  onChangeView: (view: 'customers' | 'items' | 'sales' | 'orders') => void;
+  activeView: 'customers' | 'items' | 'sales' | 'orders' | 'customerDetails';
+  onChangeView: (view: 'customers' | 'items' | 'sales' | 'orders' | 'customerDetails') => void;
   children: ReactNode;
 };
 
@@ -47,8 +47,7 @@ export default function Layout({
       <main className="main-content">
         <header className="page-header">
           <div>
-            <h1>Verwaltung</h1>
-            <p>Second-Hand Verwaltung für Kunden und Kleidungsstücke</p>
+            <h1>Kundendetails</h1>
           </div>
         </header>
 

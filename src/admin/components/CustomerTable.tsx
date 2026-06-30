@@ -4,12 +4,14 @@ type CustomerTableProps = {
   customers: Customer[];
   loading: boolean;
   onReload: () => void;
+  onCustomerClick: (customerId: number) => void;
 };
 
 export default function CustomerTable({
   customers,
   loading,
   onReload,
+  onCustomerClick,
 }: CustomerTableProps) {
   return (
     <section className="card">
@@ -38,9 +40,14 @@ export default function CustomerTable({
             <tbody>
               {customers.map((customer) => (
                 <tr key={customer.id}>
-                  <td>{customer.customer_number}</td>
+                  <td>{customer.customer_number || '-'}</td>
                   <td>
-                    {customer.first_name} {customer.last_name}
+                    <button
+                      className="link-button"
+                      onClick={() => onCustomerClick(customer.id)}
+                    >
+                      {customer.first_name} {customer.last_name}
+                    </button>
                   </td>
                   <td>{customer.city || '-'}</td>
                   <td>{customer.phone || '-'}</td>

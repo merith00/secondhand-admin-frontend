@@ -4,12 +4,14 @@ type CustomerCreditsTableProps = {
   credits: CustomerCredit[];
   loading: boolean;
   onReload: () => void;
+  onCustomerClick: (customerId: number) => void;
 };
 
 export default function CustomerCreditsTable({
   credits,
   loading,
   onReload,
+  onCustomerClick,
 }: CustomerCreditsTableProps) {
   return (
     <section className="card">
@@ -33,7 +35,7 @@ export default function CustomerCreditsTable({
                 <th>Gekaufte Teile</th>
                 <th>Summe von Verkäufen</th>
                 <th>Summe von Käufen</th>
-                <th>Aktuelles Guthaben</th>
+                <th style={{ fontWeight: 800, color: 'black' }}>Aktuelles Guthaben</th>
               </tr>
             </thead>
             <tbody>
@@ -41,14 +43,30 @@ export default function CustomerCreditsTable({
                 <tr key={credit.id}>
                   <td>{credit.customer_number}</td>
                   <td>
-                    {credit.first_name} {credit.last_name}
+                    <button
+                      className="link-button"
+                      onClick={() => onCustomerClick(credit.id)}
+                    >
+                      {credit.first_name} {credit.last_name}
+                    </button>
                   </td>
                   <td>{Number(credit.sold_items_count)}</td>
                   <td>{Number(credit.bought_items_count)}</td>
                   <td>{Number(credit.total_credit_earned).toFixed(2)} €</td>
                   <td>{Number(credit.total_credit_spent).toFixed(2)} €</td>
-                  <td>{Number(credit.credit_balance).toFixed(2)} €</td>
-                </tr>
+                  <td
+                    style={{
+                      fontWeight: 800,
+                      color:
+                        Number(credit.credit_balance) > 0
+                          ? '#16a34a'
+                          : Number(credit.credit_balance) < 0
+                            ? '#dc2626'
+                            : '#ca8a04',
+                    }}
+                  >
+                    {Number(credit.credit_balance).toFixed(2)} €
+                  </td>                </tr>
               ))}
 
               {credits.length === 0 && (

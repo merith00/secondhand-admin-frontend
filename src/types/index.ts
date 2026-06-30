@@ -30,6 +30,8 @@ export type Item = {
   is_in_store: number;
   is_online_visible: number;
   sold_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
   first_name: string;
   last_name: string;
   customer_number?: string;
@@ -41,6 +43,9 @@ export type CustomerFormData = {
   first_name: string;
   last_name: string;
   city: string;
+  postal_code: string;
+  street: string;
+  house_number: string;
   phone: string;
   email: string;
 };
@@ -74,6 +79,7 @@ export type Sale = {
   customer_number?: string;
   first_name: string;
   last_name: string;
+  buyer_customer_id: number;
 };
 
 export type SaleFormData = {

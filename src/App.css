@@ -786,3 +786,41 @@ th {
   border-radius: 10px;
   border: 1px solid #ddd;
 }
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+
+.back-btn {
+  width: fit-content;
+  padding: 8px 14px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.customer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+  margin-bottom: 20px;
+}
+
+.customer-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+@media (max-width: 900px) {
+  .customer-grid,
+  .customer-info-grid {
+    grid-template-columns: 1fr;
+  }
+}

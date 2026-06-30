@@ -13,6 +13,7 @@ import CustomerCreditsTable from './components/CustomerCreditsTable';
 
 import { fetchShopOrders } from '../api/adminApi';
 import ShopOrdersTable from './components/ShopOrdersTable';
+import CustomerDetailPage from './components/CustomerDetailPage';
 import type { AdminShopOrder } from '../types';
 
 import { Capacitor } from '@capacitor/core';
@@ -47,8 +48,9 @@ import {
 } from '../api/adminApi';
 
 function App() {
-  const [activeView, setActiveView] = useState<'customers' | 'items' | 'sales' | 'orders'>('customers');
+  const [activeView, setActiveView] = useState<'customers' | 'items' | 'sales' | 'orders' | 'customerDetails'>('customers');
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const [items, setItems] = useState<Item[]>([]);
 
   const [loadingCustomers, setLoadingCustomers] = useState(false);
@@ -73,6 +75,9 @@ function App() {
     first_name: '',
     last_name: '',
     city: '',
+    postal_code: '',
+    street: '',
+    house_number: '',
     phone: '',
     email: '',
   });
@@ -206,6 +211,9 @@ function App() {
         first_name: '',
         last_name: '',
         city: '',
+        postal_code: '',
+        street: '',
+        house_number: '',
         phone: '',
         email: '',
       });
@@ -435,6 +443,10 @@ function App() {
               credits={customerCredits}
               loading={loadingCustomerCredits}
               onReload={loadCustomerCredits}
+              onCustomerClick={(customerId) => {
+                setSelectedCustomerId(customerId);
+                setActiveView('customerDetails');
+              }}
             />
           </div>
 
@@ -443,6 +455,10 @@ function App() {
               customers={customers}
               loading={loadingCustomers}
               onReload={loadCustomers}
+              onCustomerClick={(customerId) => {
+                setSelectedCustomerId(customerId);
+                setActiveView('customerDetails');
+              }}
             />
           </div>
         </div>
@@ -497,6 +513,19 @@ function App() {
           orders={shopOrders}
           loading={loadingShopOrders}
           onReload={loadShopOrders}
+        />
+      )}
+
+      {activeView === 'customerDetails' && selectedCustomerId && (
+        <CustomerDetailPage
+          customerId={selectedCustomerId}
+          customers={customers}
+          items={items}
+          sales={sales}
+          onBack={() => {
+            setSelectedCustomerId(null);
+            setActiveView('customers');
+          }}
         />
       )}
     </Layout>
