@@ -15,8 +15,8 @@
 - [x] Verkäufe multidimensional aufbauen
 
 ## Artikel
-- [ ] Kategorie-Dropdown erstellen
-- [ ] Kategorie „Sonstige“ ergänzen
+- [x] Kategorie-Dropdown erstellen
+- [x] Kategorie „Sonstige“ ergänzen
 
 
 ## Barcode

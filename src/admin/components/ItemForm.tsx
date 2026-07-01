@@ -43,6 +43,96 @@ export default function ItemForm({
     };
   }, [previewUrl]);
 
+
+  const categories = [
+    'T-Shirt',
+    'Hose',
+    'Jeans',
+    'Kleid',
+    'Rock',
+    'Hemd',
+    'Bluse',
+    'Pullover',
+    'Hoodie',
+    'Jacke',
+    'Mantel',
+    'Weste',
+    'Shorts',
+    'Leggings',
+    'Jogginghose',
+    'Anzug',
+    'Sakko',
+    'Blazer',
+    'Schlafbekleidung',
+    'Unterwäsche',
+    'Bademode',
+    'Schuhe',
+    'Accessoires',
+    'Sonstiges',
+  ];
+
+  const sizeOptions = [
+    'XS',
+    'S',
+    'M',
+    'L',
+    'XL',
+    '32',
+    '34',
+    '36',
+    '38',
+    '40',
+    '42',
+    '44',
+  ]
+
+  const brandOptions = [
+    'Nike',
+    'Adidas',
+    'Puma',
+    'Reebok',
+    'Under Armour',
+    'New Balance',
+    'Asics',
+    'Converse',
+    'Vans',
+    'Fila',
+    'Levi\'s',
+    'Tommy Hilfiger',
+    'Calvin Klein',
+    'Ralph Lauren',
+    'H&M',
+    'Zara',
+    'Uniqlo',
+    'Only',
+    'Vero Moda',
+    'Mango',
+    'Esprit',
+    'Jack & Jones',
+    'Superdry',
+    'Sonstiges'
+  ]
+
+  const colorOptions = [
+    'Schwarz',
+    'Weiß',
+    'Grau',
+    'Rot',
+    'Blau',
+    'Grün',
+    'Gelb',
+    'Orange',
+    'Lila',
+    'Braun',
+    'Beige',
+    'Rosa',
+    'Türkis',
+    'Silber',
+    'Gold',
+    'Bunt',
+    'Sonstiges'
+  ];
+
   return (
     <section className="card">
       <h3>Neues Kleidungsstück anlegen</h3>
@@ -78,33 +168,60 @@ export default function ItemForm({
           rows={4}
         />
 
-        <input
+        <select
           name="category"
-          placeholder="Kategorie"
           value={formData.category}
           onChange={onChange}
-        />
+        >
+          <option value="">Kategorie auswählen</option>
+          {categories.map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
 
-        <input
+        <select 
           name="size"
-          placeholder="Größe"
           value={formData.size}
           onChange={onChange}
-        />
+        >
+          <option value="">Größe auswählen</option>
+          {sizeOptions.map((size) => (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          ))}
+        </select>
 
-        <input
+        <select
           name="brand"
-          placeholder="Marke"
           value={formData.brand}
           onChange={onChange}
-        />
+        >
+          <option value="">Marke auswählen</option>
+          {brandOptions.map((brand) => (
+            <option key={brand} value={brand}>
+              {brand}
+            </option>
+          ))}
+        </select>
 
-        <input
+
+
+
+        <select
           name="color"
-          placeholder="Farbe"
           value={formData.color}
           onChange={onChange}
-        />
+        >
+          <option value="">Farbe auswählen</option>
+          {colorOptions.map((color) => (
+            <option key={color} value={color}>
+              {color}
+            </option>
+          ))}
+        </select>
 
         <input
           name="price"
