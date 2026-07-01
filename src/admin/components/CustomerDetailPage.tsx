@@ -7,6 +7,7 @@ type CustomerDetailPageProps = {
   items: Item[];
   sales: Sale[];
   onBack: () => void;
+  onAddItem: (customerId: number) => void;
 };
 
 export default function CustomerDetailPage({
@@ -15,6 +16,7 @@ export default function CustomerDetailPage({
   items,
   sales,
   onBack,
+  onAddItem,
 }: CustomerDetailPageProps) {
   const customer = customers.find((c) => c.id === customerId);
 
@@ -66,10 +68,20 @@ export default function CustomerDetailPage({
   return (
     <div className="customer-page">
 
+      <div className="customer-grid">
 
       <button className="secondary-btn back-btn" onClick={onBack}>
         ← Zurück zur Kundenliste
       </button>
+
+      <button
+        className="primary-btn"
+        onClick={() => onAddItem(customerId)}
+        style={{margin: '0px 0px 0px 220px'}}
+      >
+        Kleidungsstück hinzufügen
+      </button>
+      </div>
 
       <div className="customer-grid">
         <section className="card">
@@ -81,9 +93,9 @@ export default function CustomerDetailPage({
               <p><strong>E-Mail:</strong> {customer.email || '-'}</p>
               <p>
                 <strong>Aktuelles Guthaben:{' '}
-                <span className={creditBalance > 0 ? 'credit-positive' : creditBalance < 0 ? 'credit-negative' : 'credit-neutral'}>
-                  {creditBalance.toFixed(2)} €
-                </span></strong>
+                  <span className={creditBalance > 0 ? 'credit-positive' : creditBalance < 0 ? 'credit-negative' : 'credit-neutral'}>
+                    {creditBalance.toFixed(2)} €
+                  </span></strong>
               </p>
             </div>
 

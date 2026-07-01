@@ -110,6 +110,11 @@ function App() {
     owner_amount: 0,
     shop_amount: 0,
   });
+
+  const [showItemModal, setShowItemModal] = useState(false);
+
+
+
   async function handleToggleOnline(itemId: number, isVisible: boolean) {
     try {
       await updateItem(itemId, {
@@ -267,6 +272,7 @@ function App() {
       setImagePreview('');
 
       await loadItems();
+      setShowItemModal(false);
     } catch (err: any) {
       setError(err.message || 'Fehler beim Speichern des Kleidungsstücks');
     }
@@ -365,6 +371,25 @@ function App() {
       ...prev,
       is_online_visible: checked,
     }));
+  }
+
+
+  function openItemModalForCustomer(customerId: number) {
+    setItemFormData({
+      owner_customer_id: String(customerId),
+      title: '',
+      description: '',
+      category: '',
+      size: '',
+      brand: '',
+      color: '',
+      price: '',
+      is_online_visible: false,
+    });
+
+    setSelectedItemImage(null);
+    setImagePreview('');
+    setShowItemModal(true);
   }
 
 
@@ -526,6 +551,8 @@ function App() {
       )}
 
       {activeView === 'customerDetails' && selectedCustomerId && (
+
+
         <CustomerDetailPage
           customerId={selectedCustomerId}
           customers={customers}
@@ -535,7 +562,37 @@ function App() {
             setSelectedCustomerId(null);
             setActiveView('customers');
           }}
+          onAddItem={openItemModalForCustomer}
         />
+      )}
+
+
+      {showItemModal && (
+        <div className="modal-backdrop">
+          <div className="modal-content">
+            <button
+              className="modal-close-btn"
+              onClick={() => setShowItemModal(false)}
+            >
+              ✕
+            </button>
+
+            <ItemForm
+              formData={itemFormData}
+              customers={customers}
+              selectedImage={selectedItemImage}
+              onImageChange={handleItemImageChange}
+              onChange={handleItemChange}
+              onCheckboxChange={handleItemCheckboxChange}
+              onSubmit={handleItemSubmit}
+              onTakePhoto={handleTakePhoto}
+              onPickPhoto={handlePickPhoto}
+              imagePreview={imagePreview}
+              isUploadingImage={isUploadingImage}
+              isNativeMobile={isNativeMobile}
+            />
+          </div>
+        </div>
       )}
     </Layout>
   );

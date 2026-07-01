@@ -4,7 +4,7 @@
 - [x] Kundennummer selber erstellen
 - [ ] Status automatisch setzen: Kunde hat keine Klamotten mehr und kein Guthaben
 - [x] Auf Kunden klicken und Bestandsliste sehen
-- [ ] Kunden-Bestandsliste erweitern können
+- [x] Kunden-Bestandsliste erweitern können
 
 ## Guthaben
 - [ ] Guthabenübersicht erstellen
