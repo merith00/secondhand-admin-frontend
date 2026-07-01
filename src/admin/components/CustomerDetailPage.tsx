@@ -110,7 +110,7 @@ export default function CustomerDetailPage({
                 <td>{item.category || '-'}</td>
                 <td>{item.size || '-'}</td>
                 <td>{item.created_at ? new Date(item.created_at).toLocaleDateString() : '-'}</td>
-                <td>{item.price} €</td>
+                <td>{item.start_price} €</td>
 
               </tr>
             ))}
@@ -121,7 +121,7 @@ export default function CustomerDetailPage({
                 <td colSpan={5}>Summe:</td>
                 <td><strong>
                   {availableItems
-                    .reduce((sum, item) => sum + Number(item.price), 0)
+                    .reduce((sum, item) => sum + Number(item.start_price), 0)
                     .toFixed(2)} €
                  </strong></td>
              </tr>
@@ -147,31 +147,35 @@ export default function CustomerDetailPage({
               <th>Kategorie</th>
               <th>Größe</th>
               <th>Verkauf am</th>
-              <th>Preis</th>
+              <th>Angedachte Preis</th>
+              <th>Verkaufspreis</th>
+              <th>Shopanteil</th>
+              <th>Verkauferanteil</th>
             </tr>
           </thead>
           <tbody>
             {soldItems.map((item) => (
-              <tr key={item.id}>
+              <tr key={item.id} >
                 <td>
                   <ItemImageShow imageUrl={item.image_url} />
                 </td>
-                <td>{item.title}</td>
                 <td>{item.category || '-'}</td>
                 <td>{item.size || '-'}</td>
                 <td>{item.sold_at ? new Date(item.sold_at).toLocaleDateString() : '-'}</td>
-                <td>{item.price} €</td>
-
+                <td>{item.start_price} €</td>
+                <td>{item.verkaufspreis} €</td>
+                <td>{item.shopAnteil} €</td>
+                <td>{item.verkauferAnteil} €</td>
               </tr>
             ))}
 
 
             {soldItems.length > 0 && (
               <tr>
-                <td colSpan={5}>Summe:</td>
+                <td colSpan={8}>Summe:</td>
                 <td><strong>
                   {soldItems
-                    .reduce((sum, item) => sum + Number(item.price), 0)
+                    .reduce((sum, item) => sum + Number(item.verkaufspreis), 0)
                     .toFixed(2)} €
                 </strong>
                 </td>
@@ -198,7 +202,7 @@ export default function CustomerDetailPage({
               <th>Kategorie</th>
               <th>Größe</th>
               <th>Gekauft von</th>
-              <th>Preis</th>
+              <th>Verkaufspreis</th>
             </tr>
           </thead>
 
@@ -212,7 +216,7 @@ export default function CustomerDetailPage({
                 <td>{item!.category || '-'}</td>
                 <td>{item!.size || '-'}</td>
                 <td>{item!.customer_number || '-'}</td>
-                <td>{item!.price} €</td>
+                <td>{item!.verkaufspreis} €</td>
               </tr>
             ))}
 
@@ -221,7 +225,7 @@ export default function CustomerDetailPage({
                 <td colSpan={5}>Summe:</td>
                 <td><strong>
                   {purchasedItems
-                    .reduce((sum, item) => sum + Number(item!.price), 0)
+                    .reduce((sum, item) => sum + Number(item!.verkaufspreis), 0)
                     .toFixed(2)} €
                 </strong></td>
               </tr>

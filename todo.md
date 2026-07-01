@@ -12,11 +12,12 @@
 
 ## Verkauf / Steuer
 - [ ] Mehrwertsteuer berücksichtigen: Kunde zahlt volle Mehrwertsteuer
-- [ ] Verkäufe multidimensional aufbauen
+- [x] Verkäufe multidimensional aufbauen
 
 ## Artikel
 - [ ] Kategorie-Dropdown erstellen
 - [ ] Kategorie „Sonstige“ ergänzen
+
 
 ## Barcode
 - [ ] Barcode-Scanner einbauen

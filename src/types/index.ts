@@ -24,7 +24,7 @@ export type Item = {
   size?: string;
   brand?: string;
   color?: string;
-  price: number;
+  start_price: number;
   image_url?: string;
   status: string;
   is_in_store: number;
@@ -35,6 +35,9 @@ export type Item = {
   first_name: string;
   last_name: string;
   customer_number?: string;
+  verkaufspreis?: number;
+  verkauferAnteil?: number;
+  shopAnteil?: number;
 };
 
 
