@@ -33,6 +33,8 @@ export default function CustomerCreditsTable({
                 <th>Name</th>
                 <th>Verkaufte Teile</th>
                 <th>Gekaufte Teile</th>
+                <th>Vorhandene Teile</th>
+                <th>Insgesamt abgegeben</th>
                 <th>Summe von Verkäufen</th>
                 <th>Summe von Käufen</th>
                 <th style={{ fontWeight: 800, color: 'black' }}>Aktuelles Guthaben</th>
@@ -52,6 +54,8 @@ export default function CustomerCreditsTable({
                   </td>
                   <td>{Number(credit.sold_items_count)}</td>
                   <td>{Number(credit.bought_items_count)}</td>
+                  <td>{Number(credit.available_items_count)}</td>
+                  <td>{Number(credit.total_items_count)}</td>
                   <td>{Number(credit.total_credit_earned).toFixed(2)} €</td>
                   <td>{Number(credit.total_credit_spent).toFixed(2)} €</td>
                   <td

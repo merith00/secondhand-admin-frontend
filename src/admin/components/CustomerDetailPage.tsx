@@ -159,6 +159,7 @@ export default function CustomerDetailPage({
                 <td>
                   <ItemImageShow imageUrl={item.image_url} />
                 </td>
+                <td>{item.title}</td>
                 <td>{item.category || '-'}</td>
                 <td>{item.size || '-'}</td>
                 <td>{item.sold_at ? new Date(item.sold_at).toLocaleDateString() : '-'}</td>

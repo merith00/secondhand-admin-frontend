@@ -104,6 +104,8 @@ export type CustomerCredit = {
   total_credit_earned: number;
   total_credit_spent: number;
   bought_items_count: number;
+  available_items_count: number;
+  total_items_count: number;
 };
 
 export type ShopItem = {
