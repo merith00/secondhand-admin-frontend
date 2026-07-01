@@ -49,33 +49,53 @@ export default function CustomerDetailPage({
     )
     .filter(Boolean);
 
+
+  const totalCreditEarned = soldItems.reduce(
+    (sum, item) => sum + Number(item.verkauferAnteil || 0),
+    0
+  );
+
+  const totalCreditSpent = purchasedItems.reduce(
+    (sum, item) => sum + Number(item!.verkaufspreis || 0),
+    0
+  );
+
+  const creditBalance = totalCreditEarned - totalCreditSpent;
+
+
   return (
     <div className="customer-page">
 
 
-        <button className="secondary-btn back-btn" onClick={onBack}>
-          ← Zurück zur Kundenliste
-        </button>
+      <button className="secondary-btn back-btn" onClick={onBack}>
+        ← Zurück zur Kundenliste
+      </button>
 
-        <div className="customer-grid">
-          <section className="card">
-            <div className="customer-info-grid">
-              <div>
-                <h2>{customer.first_name} {customer.last_name}</h2>
-                <p><strong>Kundennummer:</strong> {customer.customer_number}</p>
-                <p><strong>Telefon:</strong> {customer.phone || '-'}</p>
-                <p><strong>E-Mail:</strong> {customer.email || '-'}</p>
-              </div>
-
-              <div>
-                <h2>Adresse</h2>
-                <p><strong>Ort:</strong> {customer.city || '-'}</p>
-                <p><strong>Straße:</strong> {customer.street || '-'}</p>
-                <p><strong>Hausnummer:</strong> {customer.house_number || '-'}</p>
-                <p><strong>Postleitzahl:</strong> {customer.postal_code || '-'}</p>
-              </div>
+      <div className="customer-grid">
+        <section className="card">
+          <div className="customer-info-grid">
+            <div>
+              <h2>{customer.first_name} {customer.last_name}</h2>
+              <p><strong>Kundennummer:</strong> {customer.customer_number}</p>
+              <p><strong>Telefon:</strong> {customer.phone || '-'}</p>
+              <p><strong>E-Mail:</strong> {customer.email || '-'}</p>
+              <p>
+                <strong>Aktuelles Guthaben:{' '}
+                <span className={creditBalance > 0 ? 'credit-positive' : creditBalance < 0 ? 'credit-negative' : 'credit-neutral'}>
+                  {creditBalance.toFixed(2)} €
+                </span></strong>
+              </p>
             </div>
-          </section>
+
+            <div>
+              <h2>Adresse</h2>
+              <p><strong>Ort:</strong> {customer.city || '-'}</p>
+              <p><strong>Straße:</strong> {customer.street || '-'}</p>
+              <p><strong>Hausnummer:</strong> {customer.house_number || '-'}</p>
+              <p><strong>Postleitzahl:</strong> {customer.postal_code || '-'}</p>
+            </div>
+          </div>
+        </section>
 
         <section className="card">
           <h2>Übersicht</h2>
@@ -84,7 +104,7 @@ export default function CustomerDetailPage({
           <p><strong>Noch vorhanden:</strong> {availableItems.length}</p>
           <p><strong>Gekauft:</strong> {purchasedItems.length}</p>
         </section>
-        </div>
+      </div>
 
       <section className="card">
         <h3>Noch vorhandene Kleidung</h3>
@@ -96,7 +116,7 @@ export default function CustomerDetailPage({
               <th>Kategorie</th>
               <th>Größe</th>
               <th>Verfügbar seit</th>
-              <th>Preis</th>
+              <th>Angedachter Preis</th>
 
             </tr>
           </thead>
@@ -123,8 +143,8 @@ export default function CustomerDetailPage({
                   {availableItems
                     .reduce((sum, item) => sum + Number(item.start_price), 0)
                     .toFixed(2)} €
-                 </strong></td>
-             </tr>
+                </strong></td>
+              </tr>
             )}
             {availableItems.length === 0 && (
               <tr>
@@ -176,7 +196,7 @@ export default function CustomerDetailPage({
                 <td colSpan={8}>Summe:</td>
                 <td><strong>
                   {soldItems
-                    .reduce((sum, item) => sum + Number(item.verkaufspreis), 0)
+                    .reduce((sum, item) => sum + Number(item.verkauferAnteil), 0)
                     .toFixed(2)} €
                 </strong>
                 </td>
