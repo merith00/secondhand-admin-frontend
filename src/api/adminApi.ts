@@ -89,6 +89,8 @@ export async function fetchSales() {
 export async function createSale(sale: {
   item_id: number;
   sale_price: number;
+  owner_amount: number;
+  shop_amount: number;
   sale_type: 'store' | 'online';
   payment_method: 'cash' | 'bank_transfer';
   notes?: string;

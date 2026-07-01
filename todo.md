@@ -8,10 +8,10 @@
 
 ## Guthaben
 - [ ] Guthabenübersicht erstellen
-- [ ] Anzeigen, wie viele Teile der Kunde insgesamt hat
+- [x] Anzeigen, wie viele Teile der Kunde insgesamt hat
 
 ## Verkauf / Steuer
-- [ ] Mehrwertsteuer berücksichtigen: Kunde zahlt volle Mehrwertsteuer
+- [x] Mehrwertsteuer berücksichtigen: Kunde zahlt volle Mehrwertsteuer
 - [x] Verkäufe multidimensional aufbauen
 
 ## Artikel

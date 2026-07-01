@@ -92,6 +92,10 @@ export type SaleFormData = {
   payment_method: 'cash' | 'bank_transfer';
   notes: string;
   buyer_customer_id: string;
+  seller_share_percent: string;
+  shop_share_percent: string;
+  owner_amount?: number;
+  shop_amount?: number;
 };
 
 export type CustomerCredit = {

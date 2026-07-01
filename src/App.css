@@ -824,3 +824,16 @@ th {
     grid-template-columns: 1fr;
   }
 }
+
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4b5563;
+}

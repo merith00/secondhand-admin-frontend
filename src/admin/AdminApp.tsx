@@ -105,8 +105,11 @@ function App() {
     payment_method: 'cash',
     notes: '',
     buyer_customer_id: '',
+    seller_share_percent: '40',
+    shop_share_percent: '60',
+    owner_amount: 0,
+    shop_amount: 0,
   });
-
   async function handleToggleOnline(itemId: number, isVisible: boolean) {
     try {
       await updateItem(itemId, {
@@ -374,6 +377,8 @@ function App() {
       await createSale({
         item_id: Number(saleFormData.item_id),
         sale_price: Number(saleFormData.sale_price),
+        owner_amount: Number(saleFormData.owner_amount),
+        shop_amount: Number(saleFormData.shop_amount),
         sale_type: saleFormData.sale_type,
         payment_method: saleFormData.payment_method,
         notes: saleFormData.notes,
@@ -387,6 +392,10 @@ function App() {
         payment_method: 'cash',
         notes: '',
         buyer_customer_id: '',
+        seller_share_percent: '40',
+        shop_share_percent: '60',
+        owner_amount: 0,
+        shop_amount: 0,
       });
 
       await loadSales();
