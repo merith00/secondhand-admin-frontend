@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { CustomerCredit } from '../../types';
 
 type CustomerCreditsTableProps = {
@@ -13,14 +14,35 @@ export default function CustomerCreditsTable({
   onReload,
   onCustomerClick,
 }: CustomerCreditsTableProps) {
+
+  const [onlyActiveCustomers, setOnlyActiveCustomers] = useState(true);
+
+  const visibleCredits = onlyActiveCustomers
+    ? credits.filter(
+      (credit) =>
+        Number(credit.available_items_count) > 0 ||
+        Number(credit.credit_balance) !== 0
+    )
+    : credits;
   return (
     <section className="card">
       <div className="card-header">
         <h3>Guthabenübersicht pro Kunde</h3>
+        <label className="checkbox-row">
+          <input
+            type="checkbox"
+            checked={onlyActiveCustomers}
+            onChange={(e) => setOnlyActiveCustomers(e.target.checked)}
+          />
+          Nur Kunden mit vorhandenen Kleidungsstücken oder Guthaben anzeigen
+        </label>
         <button className="secondary-btn" onClick={onReload}>
           Neu laden
         </button>
+
+
       </div>
+
 
       {loading ? (
         <p>Lade Guthaben...</p>
@@ -41,7 +63,7 @@ export default function CustomerCreditsTable({
               </tr>
             </thead>
             <tbody>
-              {credits.map((credit) => (
+              {visibleCredits.map((credit) => (
                 <tr key={credit.id}>
                   <td>{credit.customer_number}</td>
                   <td>
@@ -73,7 +95,7 @@ export default function CustomerCreditsTable({
                   </td>                </tr>
               ))}
 
-              {credits.length === 0 && (
+              {visibleCredits.length === 0 && (
                 <tr>
                   <td colSpan={4}>Noch keine Guthabendaten vorhanden.</td>
                 </tr>
