@@ -198,3 +198,17 @@ export type AdminShopOrder = {
 };
 
 
+export type ItemOptionType =
+  | 'category'
+  | 'size'
+  | 'brand'
+  | 'color';
+
+export type ItemOption = {
+  id: number;
+  type: ItemOptionType;
+  value: string;
+  sort_order: number;
+  is_active: number;
+  created_at?: string;
+};

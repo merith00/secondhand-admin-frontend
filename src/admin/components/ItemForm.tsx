@@ -1,5 +1,11 @@
-import { useMemo, useEffect } from 'react';
-import type { Customer, ItemFormData } from '../../types';
+import { useMemo, useEffect, useState } from 'react';
+import type {
+  Customer,
+  ItemFormData,
+  ItemOption,
+} from '../../types';
+
+import { fetchItemOptions } from '../../api/adminApi';
 
 type ItemFormProps = {
   formData: ItemFormData;
@@ -44,94 +50,45 @@ export default function ItemForm({
   }, [previewUrl]);
 
 
-  const categories = [
-    'T-Shirt',
-    'Hose',
-    'Jeans',
-    'Kleid',
-    'Rock',
-    'Hemd',
-    'Bluse',
-    'Pullover',
-    'Hoodie',
-    'Jacke',
-    'Mantel',
-    'Weste',
-    'Shorts',
-    'Leggings',
-    'Jogginghose',
-    'Anzug',
-    'Sakko',
-    'Blazer',
-    'Schlafbekleidung',
-    'Unterwäsche',
-    'Bademode',
-    'Schuhe',
-    'Accessoires',
-    'Sonstiges',
-  ];
+  const [itemOptions, setItemOptions] = useState<ItemOption[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(true);
 
-  const sizeOptions = [
-    'XS',
-    'S',
-    'M',
-    'L',
-    'XL',
-    '32',
-    '34',
-    '36',
-    '38',
-    '40',
-    '42',
-    '44',
-  ]
+  useEffect(() => {
+    async function loadItemOptions() {
+      try {
+        setLoadingOptions(true);
 
-  const brandOptions = [
-    'Nike',
-    'Adidas',
-    'Puma',
-    'Reebok',
-    'Under Armour',
-    'New Balance',
-    'Asics',
-    'Converse',
-    'Vans',
-    'Fila',
-    'Levi\'s',
-    'Tommy Hilfiger',
-    'Calvin Klein',
-    'Ralph Lauren',
-    'H&M',
-    'Zara',
-    'Uniqlo',
-    'Only',
-    'Vero Moda',
-    'Mango',
-    'Esprit',
-    'Jack & Jones',
-    'Superdry',
-    'Sonstiges'
-  ]
+        const data = await fetchItemOptions();
 
-  const colorOptions = [
-    'Schwarz',
-    'Weiß',
-    'Grau',
-    'Rot',
-    'Blau',
-    'Grün',
-    'Gelb',
-    'Orange',
-    'Lila',
-    'Braun',
-    'Beige',
-    'Rosa',
-    'Türkis',
-    'Silber',
-    'Gold',
-    'Bunt',
-    'Sonstiges'
-  ];
+        setItemOptions(data);
+      } catch (err: any) {
+        // setOptionsError(
+        //   err.message || 'Auswahlmöglichkeiten konnten nicht geladen werden'
+        // );
+      } finally {
+        setLoadingOptions(false);
+      }
+    }
+
+    loadItemOptions();
+  }, []);
+
+
+  const categories = itemOptions.filter(
+    (option) => option.type === 'category'
+  );
+
+  const sizeOptions = itemOptions.filter(
+    (option) => option.type === 'size'
+  );
+
+  const brandOptions = itemOptions.filter(
+    (option) => option.type === 'brand'
+  );
+
+  const colorOptions = itemOptions.filter(
+    (option) => option.type === 'color'
+  );
 
   return (
     <section className="card">
@@ -172,24 +129,36 @@ export default function ItemForm({
           name="category"
           value={formData.category}
           onChange={onChange}
+          disabled={loadingOptions}
         >
-          <option value="">Kategorie auswählen</option>
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
+          <option value="">
+            {loadingOptions
+              ? 'Kategorien werden geladen...'
+              : 'Kategorie auswählen'}
+          </option>
+
+          {categories.map((option) => (
+            <option key={option.id} value={option.value}>
+              {option.value}
             </option>
           ))}
         </select>
 
-        <select 
+        <select
           name="size"
           value={formData.size}
           onChange={onChange}
+          disabled={loadingOptions}
         >
-          <option value="">Größe auswählen</option>
-          {sizeOptions.map((size) => (
-            <option key={size} value={size}>
-              {size}
+          <option value="">
+            {loadingOptions
+              ? 'Größen werden geladen...'
+              : 'Größe auswählen'}
+          </option>
+
+          {sizeOptions.map((option) => (
+            <option key={option.id} value={option.value}>
+              {option.value}
             </option>
           ))}
         </select>
@@ -198,15 +167,20 @@ export default function ItemForm({
           name="brand"
           value={formData.brand}
           onChange={onChange}
+          disabled={loadingOptions}
         >
-          <option value="">Marke auswählen</option>
-          {brandOptions.map((brand) => (
-            <option key={brand} value={brand}>
-              {brand}
+          <option value="">
+            {loadingOptions
+              ? 'Marken werden geladen...'
+              : 'Marke auswählen'}
+          </option>
+
+          {brandOptions.map((option) => (
+            <option key={option.id} value={option.value}>
+              {option.value}
             </option>
           ))}
         </select>
-
 
 
 
@@ -214,11 +188,17 @@ export default function ItemForm({
           name="color"
           value={formData.color}
           onChange={onChange}
+          disabled={loadingOptions}
         >
-          <option value="">Farbe auswählen</option>
-          {colorOptions.map((color) => (
-            <option key={color} value={color}>
-              {color}
+          <option value="">
+            {loadingOptions
+              ? 'Farben werden geladen...'
+              : 'Farbe auswählen'}
+          </option>
+
+          {colorOptions.map((option) => (
+            <option key={option.id} value={option.value}>
+              {option.value}
             </option>
           ))}
         </select>

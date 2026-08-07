@@ -14,7 +14,10 @@ import CustomerCreditsTable from './components/CustomerCreditsTable';
 import { fetchShopOrders } from '../api/adminApi';
 import ShopOrdersTable from './components/ShopOrdersTable';
 import CustomerDetailPage from './components/CustomerDetailPage';
+import Anpassungen from './components/Anpassungen';
+
 import type { AdminShopOrder } from '../types';
+
 
 import { Capacitor } from '@capacitor/core';
 import {
@@ -48,7 +51,7 @@ import {
 } from '../api/adminApi';
 
 function App() {
-  const [activeView, setActiveView] = useState<'customers' | 'items' | 'sales' | 'orders' | 'customerDetails'>('customers');
+  const [activeView, setActiveView] = useState<'customers' | 'items' | 'sales' | 'orders' | 'anpassungen' | 'historie' | 'customerDetails'>('customers');
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const [items, setItems] = useState<Item[]>([]);
@@ -548,6 +551,16 @@ function App() {
           loading={loadingShopOrders}
           onReload={loadShopOrders}
         />
+      )}
+
+      {activeView === 'anpassungen' && (
+        <Anpassungen />
+      )}
+
+      {activeView === 'historie' && (
+        <div className="content-grid">
+          <h2>Historie</h2>
+        </div>
       )}
 
       {activeView === 'customerDetails' && selectedCustomerId && (

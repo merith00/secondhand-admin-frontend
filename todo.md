@@ -2,7 +2,7 @@
 
 ## Kunden
 - [x] Kundennummer selber erstellen
-- [ ] Status automatisch setzen: Kunde hat keine Klamotten mehr und kein Guthaben
+- [x] Status automatisch setzen: Kunde hat keine Klamotten mehr und kein Guthaben
 - [x] Auf Kunden klicken und Bestandsliste sehen
 - [x] Kunden-Bestandsliste erweitern können
 
@@ -23,3 +23,29 @@
 - [ ] Barcode-Scanner einbauen
 - [ ] Barcodes erstellen
 - [ ] Barcode enthält/öffnet alle Artikelinformationen
+
+
+New Version: 
+
+Weiteren Tap um Kategorie , Größe, Farbe zu erweitern
+
+neue kunden ohne irgendwas müssen inaktiv sein 
+
+Adresse bearbeiten 
+
+weitere Reiter mit Länger als 3 Monaten drin 
+
+Mehrere Kleidungsstück für Gesamtsumme 
+
+ausdrucken können, was wurde innerhalb 3 Monaten verkauft 
+
+"Ausbezahlen"
+
+- Beträge dürfen nicht sein --> rest mit Bargeld bezahlen müssen auf Verkauf Seite regeln 
+
+Dummy Käufe
+
+Paypal
+
+
+Verkaufshistorie herunterladen 

@@ -867,3 +867,239 @@ th {
   font-size: 22px;
   cursor: pointer;
 }
+
+
+/* =========================
+   ANPASSUNGEN
+========================= */
+
+.adjustments-page {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.adjustments-page > h2,
+.adjustments-page > .error-message {
+  grid-column: 1 / -1;
+}
+
+.adjustments-page > h2 {
+  margin: 0 0 5px 0;
+  font-size: 28px;
+  color: #172235;
+}
+
+
+/* Karten */
+
+.adjustments-page .card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 22px;
+  border: 1px solid #e3e8ef;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+}
+
+
+/* Überschrift der Karte */
+
+.option-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.option-card-header h3 {
+  margin: 0;
+  font-size: 20px;
+  color: #172235;
+}
+
+
+/* Anzahl der Einträge */
+
+.option-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 30px;
+  height: 30px;
+  padding: 0 9px;
+
+  background: #eaf2ff;
+  color: #2673dd;
+
+  border-radius: 20px;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+/* Eingabe + Hinzufügen */
+
+.option-add-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.option-add-row input {
+  flex: 1;
+  min-width: 0;
+
+  padding: 11px 13px;
+
+  border: 1px solid #ccd4df;
+  border-radius: 9px;
+
+  font-size: 15px;
+  background: white;
+
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.option-add-row input:focus {
+  outline: none;
+  border-color: #2f80ed;
+  box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.12);
+}
+
+.option-add-row .primary-btn {
+  width: auto;
+  padding: 11px 18px;
+  border-radius: 9px;
+  white-space: nowrap;
+}
+
+
+/* Liste */
+
+.option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  max-height: 350px;
+  overflow-y: auto;
+  padding-right: 3px;
+}
+
+
+/* Einzelner Eintrag */
+
+.option-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  min-height: 45px;
+  padding: 8px 10px 8px 14px;
+
+  background: #f7f9fc;
+  border: 1px solid #edf0f4;
+  border-radius: 9px;
+
+  transition: background-color 0.15s;
+}
+
+.option-list-item:hover {
+  background: #f0f4f9;
+}
+
+.option-list-item span {
+  color: #27364a;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+
+/* Löschen Button */
+
+.delete-btn {
+  border: none;
+  background: #feecec;
+  color: #d53939;
+
+  padding: 7px 11px;
+  border-radius: 7px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: background-color 0.15s;
+}
+
+.delete-btn:hover {
+  background: #ffdcdc;
+  color: #bd2424;
+}
+
+
+/* Fehlermeldung */
+
+.adjustments-page .error-message {
+  padding: 12px 15px;
+
+  background: #feecec;
+  color: #bd2424;
+
+  border: 1px solid #ffd3d3;
+  border-radius: 9px;
+}
+
+
+/* Scrollbar */
+
+.option-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.option-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.option-list::-webkit-scrollbar-thumb {
+  background: #ccd4df;
+  border-radius: 10px;
+}
+
+
+/* Tablet / Handy */
+
+@media (max-width: 900px) {
+  .adjustments-page {
+    grid-template-columns: 1fr;
+  }
+
+  .adjustments-page > h2,
+  .adjustments-page > .error-message {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 550px) {
+  .adjustments-page {
+    gap: 14px;
+  }
+
+  .adjustments-page .card {
+    padding: 17px;
+  }
+
+  .option-add-row {
+    flex-direction: column;
+  }
+
+  .option-add-row .primary-btn {
+    width: 100%;
+  }
+}

@@ -165,3 +165,39 @@ export async function updateItem(
   return handleResponse(response);
 }
 
+
+export async function fetchItemOptions(type?: string) {
+  const url = type
+    ? `${API_BASE_URL}/api/item-options?type=${encodeURIComponent(type)}`
+    : `${API_BASE_URL}/api/item-options`;
+
+  const response = await fetch(url);
+
+  return handleResponse(response);
+}
+
+export async function createItemOption(data: {
+  type: 'category' | 'size' | 'brand' | 'color';
+  value: string;
+}) {
+  const response = await fetch(`${API_BASE_URL}/api/item-options`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  return handleResponse(response);
+}
+
+export async function deleteItemOption(id: number) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/item-options/${id}`,
+    {
+      method: 'DELETE',
+    }
+  );
+
+  return handleResponse(response);
+}
