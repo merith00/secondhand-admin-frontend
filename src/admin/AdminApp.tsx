@@ -15,6 +15,7 @@ import { fetchShopOrders } from '../api/adminApi';
 import ShopOrdersTable from './components/ShopOrdersTable';
 import CustomerDetailPage from './components/CustomerDetailPage';
 import Anpassungen from './components/Anpassungen';
+import Historie from './components/Historie';
 
 import type { AdminShopOrder } from '../types';
 
@@ -558,9 +559,10 @@ function App() {
       )}
 
       {activeView === 'historie' && (
-        <div className="content-grid">
-          <h2>Historie</h2>
-        </div>
+        <Historie
+          items={items}
+          loading={loadingItems}
+        />
       )}
 
       {activeView === 'customerDetails' && selectedCustomerId && (
