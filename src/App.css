@@ -1867,3 +1867,181 @@ th {
     padding: 14px;
   }
 }
+
+
+/* =========================
+   KUNDENDETAILS - PDF
+========================= */
+
+.customer-detail-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.customer-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.customer-detail-actions .primary-btn,
+.customer-detail-toolbar .secondary-btn {
+  width: auto;
+}
+
+
+/* PDF-Button */
+
+.pdf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 42px;
+  padding: 10px 16px;
+
+  border: 1px solid #dc2626;
+  border-radius: 9px;
+
+  background: #fff1f1;
+  color: #c52222;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    transform 0.15s;
+}
+
+.pdf-btn::before {
+  content: 'PDF';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-right: 8px;
+  padding: 2px 5px;
+
+  border-radius: 4px;
+
+  background: #dc2626;
+  color: white;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.pdf-btn:hover {
+  background: #dc2626;
+  color: white;
+}
+
+.pdf-btn:hover::before {
+  background: white;
+  color: #dc2626;
+}
+
+.pdf-btn:active {
+  transform: scale(0.98);
+}
+
+
+@media (max-width: 700px) {
+  .customer-detail-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .customer-detail-actions {
+    flex-direction: column;
+  }
+
+  .customer-detail-actions .pdf-btn,
+  .customer-detail-actions .primary-btn,
+  .customer-detail-toolbar .secondary-btn {
+    width: 100%;
+  }
+}
+
+
+/* Artikel länger als drei Monate vorhanden */
+
+.customer-page tr.customer-item-overdue td {
+  background: #fff0f0;
+  color: #b42323;
+}
+
+.customer-page tr.customer-item-overdue:hover td {
+  background: #ffe2e2;
+}
+
+.customer-page tr.customer-item-overdue td:first-child {
+  border-left: 4px solid #dc2626;
+}
+
+
+/* =========================
+   EXCEL-EXPORT
+========================= */
+
+.sales-table-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sales-table-actions .secondary-btn {
+  width: auto;
+}
+
+.excel-btn {
+  min-height: 40px;
+  padding: 9px 15px;
+
+  border: 1px solid #16803a;
+  border-radius: 9px;
+
+  background: #edf9f0;
+  color: #16803a;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.excel-btn:hover:not(:disabled) {
+  background: #16803a;
+  color: white;
+}
+
+.excel-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .sales-table-actions {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sales-table-actions .excel-btn,
+  .sales-table-actions .secondary-btn {
+    width: 100%;
+  }
+}

@@ -517,6 +517,7 @@ function App() {
 
       {activeView === 'historie' && (
         <Historie
+          customers={customers}
           items={items}
           sales={sales}
           loadingItems={loadingItems}

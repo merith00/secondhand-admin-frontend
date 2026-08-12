@@ -225,7 +225,7 @@ export type BatchSaleItem = {
 export type BatchSaleData = {
   buyer_customer_id: number;
   sale_type: 'store' | 'online';
-  payment_method: 'cash' | 'bank_transfer';
+  payment_method: 'cash' | 'bank_transfer' | 'paypal';
   notes?: string;
   seller_share_percent: number;
   shop_share_percent: number;

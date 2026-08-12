@@ -1,24 +1,91 @@
-import type { Sale } from '../../types';
+import { useState } from 'react';
+
+import type {
+  Customer,
+  Sale,
+} from '../../types';
+
+import {
+  exportSalesToExcel,
+} from '../../utils/salesExcel';
 
 type SalesTableProps = {
   sales: Sale[];
+  customers: Customer[];
   loading: boolean;
   onReload: () => void;
 };
 
 export default function SalesTable({
   sales,
+  customers,
   loading,
   onReload,
 }: SalesTableProps) {
+
+  const [exporting, setExporting] =
+    useState(false);
+
+  const [exportError, setExportError] =
+    useState('');
+
+
+  async function handleExcelExport() {
+    try {
+      setExporting(true);
+      setExportError('');
+
+      await exportSalesToExcel({
+        sales,
+        customers,
+      });
+    } catch (error: unknown) {
+      setExportError(
+        error instanceof Error
+          ? error.message
+          : 'Excel-Datei konnte nicht erstellt werden'
+      );
+    } finally {
+      setExporting(false);
+    }
+  }
   return (
     <section className="card">
       <div className="card-header">
         <h3>Verkaufshistorie</h3>
-        <button className="secondary-btn" onClick={onReload}>
-          Neu laden
-        </button>
+
+        <div className="sales-table-actions">
+          <button
+            type="button"
+            className="excel-btn"
+            onClick={handleExcelExport}
+            disabled={
+              exporting ||
+              loading ||
+              sales.length === 0
+            }
+          >
+            {exporting
+              ? 'Excel wird erstellt...'
+              : 'Excel herunterladen'}
+          </button>
+
+          <button
+            type="button"
+            className="secondary-btn"
+            onClick={onReload}
+            disabled={loading}
+          >
+            Neu laden
+          </button>
+        </div>
       </div>
+
+      {exportError && (
+        <div className="error-message">
+          {exportError}
+        </div>
+      )}
 
       {loading ? (
         <p>Lade Verkäufe...</p>

@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 
-import type { Item, Sale } from '../../types';
+import type {Customer,  Item, Sale } from '../../types';
 import SalesTable from './SalesTable';
 
 
 type HistorieProps = {
+  customers: Customer[];
   items: Item[];
   sales: Sale[];
   loadingItems: boolean;
@@ -21,6 +22,7 @@ const DAY_IN_MS = 1000 * 60 * 60 * 24;
 
 
 export default function Historie({
+  customers,
   items,
   sales,
   loadingItems,
@@ -278,11 +280,12 @@ export default function Historie({
 
       {activeTab === 'sales' && (
         <div className="history-sales">
-          <SalesTable
-            sales={sales}
-            loading={loadingSales}
-            onReload={onReloadSales}
-          />
+<SalesTable
+  sales={sales}
+  customers={customers}
+  loading={loadingSales}
+  onReload={onReloadSales}
+/>
         </div>
       )}
     </div>

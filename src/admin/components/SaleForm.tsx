@@ -26,7 +26,7 @@ export default function SaleForm({
   const [searchTerm, setSearchTerm] = useState('');
   const [saleType, setSaleType] = useState<'store' | 'online'>('store');
   const [paymentMethod, setPaymentMethod] =
-    useState<'cash' | 'bank_transfer'>('cash');
+    useState<'cash' | 'bank_transfer' | 'paypal'>('cash');
   const [notes, setNotes] = useState('');
   const [sellerSharePercent, setSellerSharePercent] = useState(40);
   const [shopSharePercent, setShopSharePercent] = useState(60);
@@ -473,12 +473,13 @@ export default function SaleForm({
                 value={paymentMethod}
                 onChange={(event) =>
                   setPaymentMethod(
-                    event.target.value as 'cash' | 'bank_transfer'
+                    event.target.value as 'cash' | 'bank_transfer' | 'paypal'
                   )
                 }
               >
                 <option value="cash">Bar</option>
                 <option value="bank_transfer">Überweisung</option>
+                <option value="paypal">PayPal</option>
               </select>
             </div>
 
@@ -587,7 +588,7 @@ export default function SaleForm({
             />
             <span>
               Der Kunde hat die Differenz von{' '}
-              <strong>{cashDifference.toFixed(2)} €</strong> bar bezahlt.
+              <strong>{cashDifference.toFixed(2)} €</strong> bezahlt.
             </span>
           </label>
         )}

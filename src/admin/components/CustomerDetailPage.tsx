@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Customer, Item, Sale } from '../../types';
 import { updateCustomer } from '../../api/adminApi';
 import ItemImageShow from './ItemImageShow';
+import { generateCustomerPdf } from '../../utils/customerPdf';
 
 
 type CustomerDetailPageProps = {
@@ -99,40 +100,94 @@ export default function CustomerDetailPage({
 
   const purchasedItems = purchasedSales
     .map((sale) =>
-      items.find((item) => item.id === sale.item_id)
+      items.find(
+        (item) => item.id === sale.item_id
+      )
     )
-    .filter(Boolean);
-
-
+    .filter(
+      (item): item is Item =>
+        item !== undefined
+    );
   const totalCreditEarned = soldItems.reduce(
     (sum, item) => sum + Number(item.verkauferAnteil || 0),
     0
   );
 
-  const totalCreditSpent = purchasedItems.reduce(
-    (sum, item) => sum + Number(item!.verkaufspreis || 0),
+  const totalCreditSpent = purchasedSales.reduce(
+    (sum, sale) =>
+      sum +
+      Number(
+        sale.buyer_credit_used ??
+        sale.sale_price ??
+        0
+      ),
     0
   );
 
   const creditBalance = totalCreditEarned - totalCreditSpent;
 
+  function handleCreatePdf(
+    selectedCustomer: Customer
+  ) {
+    generateCustomerPdf({
+      customer: selectedCustomer,
+      availableItems,
+      soldItems,
+      purchasedItems,
+      creditBalance,
+    });
+  }
+
+  function isOlderThanThreeMonths(
+    createdAt?: string
+  ) {
+    if (!createdAt) return false;
+
+    const createdDate = new Date(createdAt);
+
+    if (Number.isNaN(createdDate.getTime())) {
+      return false;
+    }
+
+    const threeMonthsLater =
+      new Date(createdDate);
+
+    threeMonthsLater.setMonth(
+      threeMonthsLater.getMonth() + 3
+    );
+
+    return new Date() >= threeMonthsLater;
+  }
 
   return (
     <div className="customer-page">
 
-      <div className="customer-grid">
-
-        <button className="secondary-btn back-btn" onClick={onBack}>
+      <div className="customer-detail-toolbar">
+        <button
+          type="button"
+          className="secondary-btn back-btn"
+          onClick={onBack}
+        >
           ← Zurück zur Kundenliste
         </button>
 
-        <button
-          className="primary-btn"
-          onClick={() => onAddItem(customerId)}
-          style={{ margin: '0px 0px 0px 220px' }}
-        >
-          Kleidungsstück hinzufügen
-        </button>
+        <div className="customer-detail-actions">
+          <button
+            type="button"
+            className="pdf-btn"
+            onClick={() => handleCreatePdf(customer)}
+          >
+            PDF erstellen
+          </button>
+
+          <button
+            type="button"
+            className="primary-btn"
+            onClick={() => onAddItem(customerId)}
+          >
+            Kleidungsstück hinzufügen
+          </button>
+        </div>
       </div>
 
       <div className="customer-grid">
@@ -312,19 +367,33 @@ export default function CustomerDetailPage({
             </tr>
           </thead>
           <tbody>
-            {availableItems.map((item) => (
-              <tr key={item.id}>
-                <td>
-                  <ItemImageShow imageUrl={item.image_url} />
-                </td>
-                <td>{item.title}</td>
-                <td>{item.category || '-'}</td>
-                <td>{item.size || '-'}</td>
-                <td>{item.created_at ? new Date(item.created_at).toLocaleDateString() : '-'}</td>
-                <td>{item.start_price} €</td>
+            {availableItems.map((item) => {
+              const isOverdue =
+                isOlderThanThreeMonths(
+                  item.created_at
+                );
 
-              </tr>
-            ))}
+              return (
+                <tr
+                  key={item.id}
+                  className={
+                    isOverdue
+                      ? 'customer-item-overdue'
+                      : ''
+                  }
+                >
+                  <td>
+                    <ItemImageShow imageUrl={item.image_url} />
+                  </td>
+                  <td>{item.title}</td>
+                  <td>{item.category || '-'}</td>
+                  <td>{item.size || '-'}</td>
+                  <td>{item.created_at ? new Date(item.created_at).toLocaleDateString() : '-'}</td>
+                  <td>{item.start_price} €</td>
+
+                </tr>
+              );
+            })}
 
             {soldItems.length > 0 && (
 
