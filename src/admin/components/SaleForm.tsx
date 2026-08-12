@@ -1,343 +1,610 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { Customer, Item, SaleFormData } from '../../types';
+
+import type {
+  BatchSaleData,
+  BatchSaleItem,
+  Customer,
+  CustomerCredit,
+  Item,
+} from '../../types';
 
 type SaleFormProps = {
-  formData: SaleFormData;
   customers: Customer[];
+  customerCredits: CustomerCredit[];
   items: Item[];
-  onChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (sale: BatchSaleData) => Promise<void>;
 };
 
 export default function SaleForm({
-  formData,
   customers,
+  customerCredits,
   items,
-  onChange,
   onSubmit,
 }: SaleFormProps) {
-  const [selectedSellerId, setSelectedSellerId] = useState('');
+  const [buyerCustomerId, setBuyerCustomerId] = useState('');
+  const [selectedItemId, setSelectedItemId] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [saleType, setSaleType] = useState<'store' | 'online'>('store');
+  const [paymentMethod, setPaymentMethod] =
+    useState<'cash' | 'bank_transfer'>('cash');
+  const [notes, setNotes] = useState('');
+  const [sellerSharePercent, setSellerSharePercent] = useState(40);
+  const [shopSharePercent, setShopSharePercent] = useState(60);
+  const [cashDifferenceConfirmed, setCashDifferenceConfirmed] =
+    useState(false);
+  const [cartItems, setCartItems] = useState<BatchSaleItem[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
 
-  const sellableItems = items.filter(
-    (item) => item.status !== 'sold' && item.status !== 'withdrawn'
+  const sellableItems = useMemo(() => {
+    const selectedIds = new Set(cartItems.map((item) => item.item_id));
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    return items.filter((item) => {
+      const isAvailable =
+        item.status !== 'sold' &&
+        item.status !== 'withdrawn' &&
+        item.is_in_store === 1;
+
+      if (!isAvailable || selectedIds.has(item.id)) return false;
+      if (!normalizedSearch) return true;
+
+      const owner = customers.find(
+        (customer) => customer.id === item.owner_customer_id
+      );
+
+      const searchableText = [
+        item.id,
+        item.title,
+        item.brand,
+        item.category,
+        item.size,
+        owner?.customer_number,
+        owner?.first_name,
+        owner?.last_name,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+      return searchableText.includes(normalizedSearch);
+    });
+  }, [items, customers, cartItems, searchTerm]);
+
+  function getItem(itemId: number) {
+    return items.find((item) => item.id === itemId);
+  }
+
+  function getOwner(item?: Item) {
+    if (!item) return undefined;
+
+    return customers.find(
+      (customer) => customer.id === item.owner_customer_id
+    );
+  }
+
+  function calculateAmounts(grossPrice: number) {
+    const netPrice = grossPrice / 1.19;
+    const vatAmount = grossPrice - netPrice;
+    const ownerAmount =
+      (grossPrice * sellerSharePercent) / 100 - vatAmount;
+    const shopAmount = (grossPrice * shopSharePercent) / 100;
+
+    return { netPrice, vatAmount, ownerAmount, shopAmount };
+  }
+
+  const totals = cartItems.reduce(
+    (result, cartItem) => {
+      const grossPrice = Number(cartItem.sale_price);
+      const amounts = calculateAmounts(grossPrice);
+
+      result.gross += grossPrice;
+      result.net += amounts.netPrice;
+      result.vat += amounts.vatAmount;
+      result.owner += amounts.ownerAmount;
+      result.shop += amounts.shopAmount;
+
+      return result;
+    },
+    { gross: 0, net: 0, vat: 0, owner: 0, shop: 0 }
   );
 
-  const sellersWithItems = useMemo(() => {
-    const sellerIds = new Set(
-      sellableItems.map((item) => item.owner_customer_id)
+  const selectedBuyerCredit = useMemo(() => {
+    if (!buyerCustomerId) return 0;
+
+    const creditEntry = customerCredits.find(
+      (entry) => entry.id === Number(buyerCustomerId)
     );
 
-    return customers.filter((customer) => sellerIds.has(customer.id));
-  }, [customers, sellableItems]);
+    return Math.max(0, Number(creditEntry?.credit_balance || 0));
+  }, [customerCredits, buyerCustomerId]);
 
-  const sellerItems = sellableItems.filter(
-    (item) => String(item.owner_customer_id) === selectedSellerId
-  );
-
-
-  const changeField = (name: string, value: string) => {
-    onChange({
-      target: { name, value },
-    } as React.ChangeEvent<HTMLInputElement>);
-  };
-
-  const handleSellerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const sellerId = e.target.value;
-
-    setSelectedSellerId(sellerId);
-
-    changeField('item_id', '');
-    changeField('sale_price', '');
-  };
-
-  const handleItemChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onChange(e);
-
-    const selectedItem = items.find(
-      (item) => String(item.id) === e.target.value
-    );
-
-    if (selectedItem) {
-      changeField('sale_price', String(selectedItem.start_price));
-    }
-  };
-
-  const grossPrice = Number(formData.sale_price || 0);
-  const netPrice = grossPrice / 1.19;
-  const vatAmount = grossPrice - netPrice; //MwSt. 
-
-  const sellerSharePercent = Number(formData.seller_share_percent || 40);
-  const shopSharePercent = Number(formData.shop_share_percent || 60);
-
-  const sellerAmount = (grossPrice * sellerSharePercent) / 100 - vatAmount;
-  const shopAmount = (grossPrice * shopSharePercent) / 100;
-
+  const creditUsed = Math.min(selectedBuyerCredit, totals.gross);
+  const cashDifference = Math.max(0, totals.gross - selectedBuyerCredit);
+  const requiresCashConfirmation =
+    buyerCustomerId !== '' && cartItems.length > 0 && cashDifference > 0;
 
   useEffect(() => {
-  onChange({
-    target: {
-      name: 'owner_amount',
-      value: Number(sellerAmount.toFixed(2)),
-    },
-  } as any);
+    setCashDifferenceConfirmed(false);
+  }, [buyerCustomerId, totals.gross]);
 
-  onChange({
-    target: {
-      name: 'shop_amount',
-      value: Number(shopAmount.toFixed(2)),
-    },
-  } as any);
-}, [sellerAmount, shopAmount]);
+  function handleAddItem() {
+    const itemId = Number(selectedItemId);
+
+    if (!itemId) {
+      setFormError('Bitte zuerst ein Kleidungsstück auswählen');
+      return;
+    }
+
+    const item = getItem(itemId);
+
+    if (!item) {
+      setFormError('Kleidungsstück wurde nicht gefunden');
+      return;
+    }
+
+    if (
+      item.status === 'sold' ||
+      item.status === 'withdrawn' ||
+      item.is_in_store !== 1
+    ) {
+      setFormError('Dieses Kleidungsstück ist nicht mehr verfügbar');
+      return;
+    }
+
+    if (cartItems.some((cartItem) => cartItem.item_id === itemId)) {
+      setFormError('Dieses Kleidungsstück befindet sich bereits im Verkauf');
+      return;
+    }
+
+    setCartItems((previous) => [
+      ...previous,
+      { item_id: item.id, sale_price: Number(item.start_price) },
+    ]);
+    setSelectedItemId('');
+    setSearchTerm('');
+    setFormError('');
+  }
+
+  function handlePriceChange(itemId: number, value: string) {
+    const price = Number(value);
+
+    setCartItems((previous) =>
+      previous.map((cartItem) =>
+        cartItem.item_id === itemId
+          ? { ...cartItem, sale_price: value === '' ? 0 : price }
+          : cartItem
+      )
+    );
+  }
+
+  function handleRemoveItem(itemId: number) {
+    setCartItems((previous) =>
+      previous.filter((cartItem) => cartItem.item_id !== itemId)
+    );
+  }
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+
+    if (!buyerCustomerId) {
+      setFormError('Bitte einen Käufer auswählen');
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      setFormError('Bitte mindestens ein Kleidungsstück hinzufügen');
+      return;
+    }
+
+    if (
+      sellerSharePercent < 0 ||
+      shopSharePercent < 0 ||
+      sellerSharePercent + shopSharePercent !== 100
+    ) {
+      setFormError(
+        'Verkäuferanteil und Shopanteil müssen zusammen 100 % ergeben'
+      );
+      return;
+    }
+
+    if (
+      cartItems.some(
+        (item) => !Number.isFinite(item.sale_price) || item.sale_price < 0
+      )
+    ) {
+      setFormError('Mindestens ein Verkaufspreis ist ungültig');
+      return;
+    }
+
+    if (requiresCashConfirmation && !cashDifferenceConfirmed) {
+      setFormError(
+        `Bitte bestätigen, dass der Kunde die Differenz von ${cashDifference.toFixed(2)} € bar bezahlt hat`
+      );
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setFormError('');
+
+      await onSubmit({
+        buyer_customer_id: Number(buyerCustomerId),
+        sale_type: saleType,
+        payment_method: paymentMethod,
+        notes,
+        seller_share_percent: sellerSharePercent,
+        shop_share_percent: shopSharePercent,
+        cash_difference_confirmed: cashDifferenceConfirmed,
+        items: cartItems,
+      });
+
+      setBuyerCustomerId('');
+      setSelectedItemId('');
+      setSearchTerm('');
+      setSaleType('store');
+      setPaymentMethod('cash');
+      setNotes('');
+      setSellerSharePercent(40);
+      setShopSharePercent(60);
+      setCashDifferenceConfirmed(false);
+      setCartItems([]);
+    } catch (error: unknown) {
+      setFormError(
+        error instanceof Error
+          ? error.message
+          : 'Verkauf konnte nicht gespeichert werden'
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
-    <section className="card">
-      <h3>Verkauf erfassen</h3>
-
-      <form className="form-grid" onSubmit={onSubmit}>
-        <div className="form-group">
-          <label>Verkäufer</label>
-          <select
-            name="seller_customer_id"
-            value={selectedSellerId}
-            onChange={handleSellerChange}
-            required
-          >
-            <option value="">Verkäufer auswählen</option>
-            {sellersWithItems.map((customer) => (
-              <option key={customer.id} value={customer.id}>
-                {customer.customer_number} - {customer.first_name} {customer.last_name}
-              </option>
-            ))}
-          </select>
+    <section className="card batch-sale-card">
+      <div className="batch-sale-header">
+        <div>
+          <h2>Verkauf erfassen</h2>
+          <p>Käufer auswählen und mehrere Kleidungsstücke hinzufügen</p>
         </div>
 
-        <div className="form-group">
-          <label>Kleidungsstück</label>
-          <select
-            name="item_id"
-            value={formData.item_id}
-            onChange={handleItemChange}
-            required
-            disabled={!selectedSellerId}
-          >
-            <option value="">Kleidungsstück auswählen</option>
-            {sellerItems.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.title} - {item.id}
-              </option>
-            ))}
-          </select>
-        </div>
+        <span className="batch-sale-count">{cartItems.length} Artikel</span>
+      </div>
 
-        <div className="form-group">
-          <label>Käufer</label>
-          <select
-            name="buyer_customer_id"
-            value={formData.buyer_customer_id}
-            onChange={onChange}
-          >
-            <option value="">Käufer auswählen</option>
-            {customers.map((customer) => (
-              <option key={customer.id} value={customer.id}>
-                {customer.customer_number} - {customer.first_name} {customer.last_name}
-              </option>
-            ))}
-          </select>
-        </div>
+      <form className="batch-sale-form" onSubmit={handleSubmit}>
+        {formError && <div className="error-message">{formError}</div>}
 
-        <div className="form-group">
-          <label>Brutto-Verkaufspreis</label>
+        <div className="batch-sale-section">
+          <h3>1. Käufer</h3>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr 1fr',
-              gap: '1px',
-              alignItems: 'end',
-            }}
-          >
-            <input
-              name="sale_price"
-              type="number"
-              step="0.01"
-              value={formData.sale_price}
-              onChange={onChange}
+          <div className="form-group">
+            <label htmlFor="buyer_customer_id">Käufer auswählen</label>
+
+            <select
+              id="buyer_customer_id"
+              value={buyerCustomerId}
+              onChange={(event) => {
+                setBuyerCustomerId(event.target.value);
+                setCashDifferenceConfirmed(false);
+              }}
               required
+            >
+              <option value="">Käufer auswählen</option>
+
+              {customers.map((customer) => {
+                const credit = customerCredits.find(
+                  (entry) => entry.id === customer.id
+                );
+
+                return (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.customer_number} – {customer.first_name}{' '}
+                    {customer.last_name} – Guthaben:{' '}
+                    {Number(credit?.credit_balance || 0).toFixed(2)} €
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+
+        <div className="batch-sale-section">
+          <h3>2. Kleidungsstücke</h3>
+
+          <div className="sale-item-picker">
+            <div className="form-group">
+              <label htmlFor="item_search">Kleidungsstück suchen</label>
+              <input
+                id="item_search"
+                type="search"
+                placeholder="Titel, Marke, ID oder Verkäufer"
+                value={searchTerm}
+                onChange={(event) => {
+                  setSearchTerm(event.target.value);
+                  setSelectedItemId('');
+                }}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="sale_item">Verfügbares Kleidungsstück</label>
+              <select
+                id="sale_item"
+                value={selectedItemId}
+                onChange={(event) => setSelectedItemId(event.target.value)}
+              >
+                <option value="">Kleidungsstück auswählen</option>
+
+                {sellableItems.map((item) => {
+                  const owner = getOwner(item);
+
+                  return (
+                    <option key={item.id} value={item.id}>
+                      #{item.id} – {item.title}
+                      {item.brand ? ` – ${item.brand}` : ''}
+                      {owner
+                        ? ` – ${owner.first_name} ${owner.last_name}`
+                        : ''}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            <button
+              type="button"
+              className="primary-btn sale-add-item-btn"
+              onClick={handleAddItem}
+              disabled={!selectedItemId}
+            >
+              Hinzufügen
+            </button>
+          </div>
+
+          <div className="sale-cart">
+            {cartItems.length === 0 ? (
+              <div className="sale-cart-empty">
+                Noch keine Kleidungsstücke ausgewählt.
+              </div>
+            ) : (
+              <div className="sale-cart-table-wrapper">
+                <table className="sale-cart-table">
+                  <thead>
+                    <tr>
+                      <th>Artikel</th>
+                      <th>Verkäufer</th>
+                      <th>Verkaufspreis</th>
+                      <th>Verkäufer erhält</th>
+                      <th>Shop erhält</th>
+                      <th />
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {cartItems.map((cartItem) => {
+                      const item = getItem(cartItem.item_id);
+                      const owner = getOwner(item);
+                      const amounts = calculateAmounts(
+                        Number(cartItem.sale_price)
+                      );
+
+                      return (
+                        <tr key={cartItem.item_id}>
+                          <td>
+                            <strong>{item?.title || 'Unbekannter Artikel'}</strong>
+                            <small>
+                              #{cartItem.item_id}
+                              {item?.brand ? ` · ${item.brand}` : ''}
+                              {item?.size ? ` · Größe ${item.size}` : ''}
+                            </small>
+                          </td>
+
+                          <td>
+                            {owner
+                              ? `${owner.first_name} ${owner.last_name}`
+                              : '–'}
+                          </td>
+
+                          <td>
+                            <div className="sale-price-input">
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={cartItem.sale_price}
+                                onChange={(event) =>
+                                  handlePriceChange(
+                                    cartItem.item_id,
+                                    event.target.value
+                                  )
+                                }
+                                required
+                              />
+                              <span>€</span>
+                            </div>
+                          </td>
+
+                          <td className="sale-owner-amount">
+                            {amounts.ownerAmount.toFixed(2)} €
+                          </td>
+                          <td className="sale-shop-amount">
+                            {amounts.shopAmount.toFixed(2)} €
+                          </td>
+
+                          <td>
+                            <button
+                              type="button"
+                              className="delete-btn"
+                              onClick={() => handleRemoveItem(cartItem.item_id)}
+                            >
+                              Entfernen
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="batch-sale-section">
+          <h3>3. Verkaufsdetails</h3>
+
+          <div className="sale-details-grid">
+            <div className="form-group">
+              <label>Verkaufsart</label>
+              <select
+                value={saleType}
+                onChange={(event) =>
+                  setSaleType(event.target.value as 'store' | 'online')
+                }
+              >
+                <option value="store">Verkauf im Laden</option>
+                <option value="online">Onlineverkauf</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Zahlungsart</label>
+              <select
+                value={paymentMethod}
+                onChange={(event) =>
+                  setPaymentMethod(
+                    event.target.value as 'cash' | 'bank_transfer'
+                  )
+                }
+              >
+                <option value="cash">Bar</option>
+                <option value="bank_transfer">Überweisung</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Verkäuferanteil (%)</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={sellerSharePercent}
+                onChange={(event) => {
+                  const value = Number(event.target.value);
+                  setSellerSharePercent(value);
+                  setShopSharePercent(100 - value);
+                }}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Shopanteil (%)</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={shopSharePercent}
+                onChange={(event) => {
+                  const value = Number(event.target.value);
+                  setShopSharePercent(value);
+                  setSellerSharePercent(100 - value);
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Notizen</label>
+            <textarea
+              rows={3}
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
             />
-
-            <div
-              style={{
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                padding: '10px 12px',
-                background: '#fafafa',
-              }}
-            >
-              <div style={{ fontSize: '0.8rem', color: '#666' }}>Netto</div>
-              <strong style={{ fontSize: '0.7rem' }}>{netPrice.toFixed(2)} €</strong>
-            </div>
-
-            <div
-              style={{
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                padding: '10px 12px',
-                background: '#fafafa',
-              }}
-            >
-              <div style={{ fontSize: '0.8rem', color: '#666' }}>MwSt.</div>
-              <strong style={{ fontSize: '0.7rem' }}>{vatAmount.toFixed(2)} €</strong>
-            </div>
           </div>
         </div>
 
-        <div className="form-group">
-          <label>Verkaufsart</label>
-          <select
-            name="sale_type"
-            value={formData.sale_type}
-            onChange={onChange}
-          >
-            <option value="store">Verkauf im Laden</option>
-            <option value="online">Onlineverkauf</option>
-          </select>
-        </div>
+        <div className="batch-sale-section">
+          <h3>Zusammenfassung</h3>
 
-        <div className="form-group">
-          <label>Zahlungsart</label>
-          <select
-            name="payment_method"
-            value={formData.payment_method}
-            onChange={onChange}
-          >
-            <option value="cash">Bar</option>
-            <option value="bank_transfer">Überweisung</option>
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label>Notizen</label>
-          <textarea
-            name="notes"
-            value={formData.notes}
-            onChange={onChange}
-            rows={4}
-          />
-        </div>
-
-        <div className="info-box">
-          <h4
-            style={{
-              margin: '0 0 16px',
-              fontSize: '1rem',
-              fontWeight: 600,
-            }}
-          >
-            Erlösverteilung
-          </h4>
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '16px',
-              marginBottom: '20px',
-            }}
-          >
-            <div>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '6px',
-                  fontSize: '0.9rem',
-                  color: '#666',
-                }}
-              >
-                Verkäufer  (%)
-              </label>
-
-              <input
-                name="seller_share_percent"
-                type="number"
-                value={formData.seller_share_percent || '40'}
-                onChange={onChange}
-                min="0"
-                max="100"
-              />
-            </div>
-
-            <div>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '6px',
-                  fontSize: '0.9rem',
-                  color: '#666',
-                }}
-              >
-                Shop (%)
-              </label>
-
-              <input
-                name="shop_share_percent"
-                type="number"
-                value={formData.shop_share_percent || '60'}
-                onChange={onChange}
-                min="0"
-                max="100"
-              />
-            </div>
+          <div className="sale-summary-row">
+            <span>Artikel</span>
+            <strong>{cartItems.length}</strong>
+          </div>
+          <div className="sale-summary-row">
+            <span>Netto</span>
+            <strong>{totals.net.toFixed(2)} €</strong>
+          </div>
+          <div className="sale-summary-row">
+            <span>MwSt.</span>
+            <strong>{totals.vat.toFixed(2)} €</strong>
+          </div>
+          <div className="sale-summary-row">
+            <span>Verkäufer erhalten</span>
+            <strong className="sale-owner-amount">
+              {totals.owner.toFixed(2)} €
+            </strong>
+          </div>
+          <div className="sale-summary-row">
+            <span>Shop erhält</span>
+            <strong className="sale-shop-amount">
+              {totals.shop.toFixed(2)} €
+            </strong>
+          </div>
+          <div className="sale-summary-row">
+            <span>Verfügbares Kundenguthaben</span>
+            <strong>{selectedBuyerCredit.toFixed(2)} €</strong>
+          </div>
+          <div className="sale-summary-row">
+            <span>Verwendetes Guthaben</span>
+            <strong className="sale-owner-amount">
+              {creditUsed.toFixed(2)} €
+            </strong>
           </div>
 
-          <div
-            style={{
-              borderTop: '1px solid #e5e7eb',
-              paddingTop: '14px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-              }}
-            >
-              <span>Netto-Verkaufspreis</span>
-              <strong>{netPrice.toFixed(2)} €</strong>
-            </div>
-
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-              }}
-            >
-              <span>Verkäufer erhält</span>
-              <strong style={{ color: '#16a34a' }}>
-                {sellerAmount.toFixed(2)} €
+          {cashDifference > 0 && (
+            <div className="sale-summary-row">
+              <span>Bar zu bezahlen</span>
+              <strong className="sale-cash-amount">
+                {cashDifference.toFixed(2)} €
               </strong>
             </div>
+          )}
 
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-              }}
-            >
-              <span>Shop erhält</span>
-              <strong style={{ color: '#2563eb' }}>
-                {shopAmount.toFixed(2)} €
-              </strong>
-            </div>
+          <div className="sale-summary-row sale-summary-total">
+            <span>Gesamtsumme</span>
+            <strong>{totals.gross.toFixed(2)} €</strong>
           </div>
         </div>
 
-        <button type="submit" className="primary-btn">
-          Verkauf speichern
+        {requiresCashConfirmation && (
+          <label className="cash-confirmation">
+            <input
+              type="checkbox"
+              checked={cashDifferenceConfirmed}
+              onChange={(event) =>
+                setCashDifferenceConfirmed(event.target.checked)
+              }
+            />
+            <span>
+              Der Kunde hat die Differenz von{' '}
+              <strong>{cashDifference.toFixed(2)} €</strong> bar bezahlt.
+            </span>
+          </label>
+        )}
+
+        <button
+          type="submit"
+          className="primary-btn batch-sale-submit"
+          disabled={
+            submitting ||
+            !buyerCustomerId ||
+            cartItems.length === 0 ||
+            (requiresCashConfirmation && !cashDifferenceConfirmed)
+          }
+        >
+          {submitting
+            ? 'Verkauf wird gespeichert...'
+            : `${cartItems.length} Artikel verkaufen · ${totals.gross.toFixed(2)} €`}
         </button>
       </form>
     </section>

@@ -1409,3 +1409,461 @@ th {
     width: 100%;
   }
 }
+
+/* =========================
+   MEHRFACHVERKAUF
+========================= */
+
+.batch-sale-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.batch-sale-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.batch-sale-header h2 {
+  margin: 0 0 5px;
+  color: #172235;
+  font-size: 26px;
+}
+
+.batch-sale-header p {
+  margin: 0;
+  color: #718096;
+  font-size: 14px;
+}
+
+.batch-sale-count {
+  padding: 8px 14px;
+  border-radius: 20px;
+  background: #eaf2ff;
+  color: #2673dd;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+
+/* Formular */
+
+.batch-sale-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.batch-sale-section {
+  padding: 20px;
+  border: 1px solid #e3e8ef;
+  border-radius: 13px;
+  background: #f9fbfd;
+}
+
+.batch-sale-section h3 {
+  margin: 0 0 17px;
+  color: #27364a;
+  font-size: 17px;
+}
+
+.batch-sale-section .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.batch-sale-section .form-group label {
+  color: #526173;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.batch-sale-section input,
+.batch-sale-section select,
+.batch-sale-section textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 13px;
+  border: 1px solid #ccd4df;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #27364a;
+  font-size: 14px;
+  font-family: inherit;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.batch-sale-section textarea {
+  resize: vertical;
+}
+
+.batch-sale-section input:focus,
+.batch-sale-section select:focus,
+.batch-sale-section textarea:focus {
+  outline: none;
+  border-color: #2f80ed;
+  box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.12);
+}
+
+
+/* Artikelauswahl */
+
+.sale-item-picker {
+  display: grid;
+  grid-template-columns:
+    minmax(180px, 0.8fr)
+    minmax(260px, 1.5fr)
+    auto;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.sale-add-item-btn {
+  width: auto;
+  min-height: 43px;
+  padding: 10px 18px;
+  white-space: nowrap;
+}
+
+.sale-add-item-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+
+/* Warenkorb */
+
+.sale-cart {
+  overflow: hidden;
+  border: 1px solid #e3e8ef;
+  border-radius: 11px;
+  background: #ffffff;
+}
+
+.sale-cart-empty {
+  padding: 34px 20px;
+  color: #8290a3;
+  text-align: center;
+  font-size: 14px;
+}
+
+.sale-cart-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.sale-cart-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sale-cart-table th {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e3e8ef;
+  background: #f4f7fa;
+  color: #64748b;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sale-cart-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid #edf0f4;
+  color: #27364a;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.sale-cart-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.sale-cart-table tbody tr:hover {
+  background: #fafcff;
+}
+
+.sale-cart-table td:first-child strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.sale-cart-table td:first-child small {
+  display: block;
+  color: #8290a3;
+  font-size: 11px;
+}
+
+
+/* Preiseingabe */
+
+.sale-price-input {
+  display: flex;
+  align-items: center;
+  min-width: 105px;
+  overflow: hidden;
+  border: 1px solid #ccd4df;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.sale-price-input:focus-within {
+  border-color: #2f80ed;
+  box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.1);
+}
+
+.sale-price-input input {
+  width: 78px;
+  min-width: 0;
+  padding: 8px 5px 8px 9px;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.sale-price-input input:focus {
+  border: none;
+  box-shadow: none;
+}
+
+.sale-price-input span {
+  padding-right: 9px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+
+/* Beträge */
+
+.sale-owner-amount {
+  color: #16803a !important;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sale-shop-amount {
+  color: #2673dd !important;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+
+/* Verkaufsdetails */
+
+.sale-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+
+/* Zusammenfassung */
+
+.sale-summary {
+  margin-left: auto;
+  width: min(100%, 430px);
+  box-sizing: border-box;
+  padding: 20px;
+  border: 1px solid #dbe3ed;
+  border-radius: 13px;
+  background: #f7f9fc;
+}
+
+.sale-summary h3 {
+  margin: 0 0 16px;
+  color: #27364a;
+  font-size: 17px;
+}
+
+.sale-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 7px 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.sale-summary-row strong {
+  color: #27364a;
+}
+
+.sale-summary-total {
+  margin-top: 9px;
+  padding-top: 14px;
+  border-top: 1px solid #d6dee8;
+  color: #172235;
+  font-size: 17px;
+}
+
+.sale-summary-total strong {
+  color: #172235;
+  font-size: 21px;
+}
+
+
+/* Speichern */
+
+.batch-sale-submit {
+  align-self: flex-end;
+  width: auto;
+  min-width: 280px;
+  padding: 13px 22px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+.batch-sale-submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+
+/* Fehlermeldung */
+
+.batch-sale-form .error-message {
+  padding: 12px 15px;
+  border: 1px solid #ffd3d3;
+  border-radius: 9px;
+  background: #feecec;
+  color: #bd2424;
+  font-size: 14px;
+}
+
+
+/* Tablet */
+
+@media (max-width: 900px) {
+  .sale-item-picker {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sale-add-item-btn {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
+
+/* Handy */
+
+@media (max-width: 650px) {
+  .batch-sale-header {
+    flex-direction: column;
+  }
+
+  .batch-sale-section {
+    padding: 15px;
+  }
+
+  .sale-item-picker,
+  .sale-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sale-add-item-btn {
+    grid-column: auto;
+  }
+
+  .sale-cart-table {
+    min-width: 760px;
+  }
+
+  .sale-summary {
+    width: 100%;
+  }
+
+  .batch-sale-submit {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+
+/* =========================
+   GUTHABEN UND BARZAHLUNG
+========================= */
+
+.sale-cash-amount {
+  color: #c2410c !important;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+
+/* Bestätigung der Barzahlung */
+
+.cash-confirmation {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  padding: 16px 18px;
+
+  border: 1px solid #fdba74;
+  border-radius: 11px;
+
+  background: #fff7ed;
+  color: #9a3412;
+
+  font-size: 14px;
+  line-height: 1.5;
+
+  cursor: pointer;
+}
+
+.cash-confirmation:hover {
+  background: #ffedd5;
+}
+
+.cash-confirmation input {
+  width: 19px;
+  height: 19px;
+  min-width: 19px;
+
+  margin-top: 1px;
+
+  accent-color: #ea580c;
+  cursor: pointer;
+}
+
+.cash-confirmation span {
+  flex: 1;
+}
+
+.cash-confirmation strong {
+  color: #c2410c;
+}
+
+
+/* Ausgewählte Checkbox */
+
+.cash-confirmation:has(input:checked) {
+  border-color: #86d29b;
+  background: #edf9f0;
+  color: #276638;
+}
+
+.cash-confirmation:has(input:checked) strong {
+  color: #16803a;
+}
+
+
+/* Handy */
+
+@media (max-width: 600px) {
+  .cash-confirmation {
+    padding: 14px;
+  }
+}

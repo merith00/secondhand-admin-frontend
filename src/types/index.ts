@@ -83,6 +83,10 @@ export type Sale = {
   first_name: string;
   last_name: string;
   buyer_customer_id: number;
+  transaction_id?: string | null;
+  buyer_credit_used?: number | null;
+  buyer_cash_paid?: number;
+  cash_difference_confirmed?: number;
 };
 
 export type SaleFormData = {
@@ -211,4 +215,26 @@ export type ItemOption = {
   sort_order: number;
   is_active: number;
   created_at?: string;
+};
+
+export type BatchSaleItem = {
+  item_id: number;
+  sale_price: number;
+};
+
+export type BatchSaleData = {
+  buyer_customer_id: number;
+  sale_type: 'store' | 'online';
+  payment_method: 'cash' | 'bank_transfer';
+  notes?: string;
+  seller_share_percent: number;
+  shop_share_percent: number;
+  cash_difference_confirmed: boolean;
+  items: BatchSaleItem[];
+};
+
+export type BatchSaleResult = {
+  transaction_id: string;
+  sale_ids: number[];
+  item_count: number;
 };

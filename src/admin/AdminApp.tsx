@@ -7,7 +7,6 @@ import ItemForm from './components/ItemForm';
 import ItemTable from './components/ItemTable';
 
 import SaleForm from './components/SaleForm';
-import SalesTable from './components/SalesTable';
 
 import CustomerCreditsTable from './components/CustomerCreditsTable';
 
@@ -35,14 +34,14 @@ import type {
   Item,
   ItemFormData,
   Sale,
-  SaleFormData,
+  BatchSaleData,
 } from '../types';
 
 
 import {
   createCustomer,
   createItem,
-  createSale,
+  createBatchSale,
   fetchCustomerCredits,
   fetchCustomers,
   fetchItems,
@@ -102,18 +101,7 @@ function App() {
   const [sales, setSales] = useState<Sale[]>([]);
   const [loadingSales, setLoadingSales] = useState(false);
 
-  const [saleFormData, setSaleFormData] = useState<SaleFormData>({
-    item_id: '',
-    sale_price: '',
-    sale_type: 'store',
-    payment_method: 'cash',
-    notes: '',
-    buyer_customer_id: '',
-    seller_share_percent: '40',
-    shop_share_percent: '60',
-    owner_amount: 0,
-    shop_amount: 0,
-  });
+
 
   const [showItemModal, setShowItemModal] = useState(false);
 
@@ -397,56 +385,32 @@ function App() {
   }
 
 
-  async function handleSaleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
+  async function handleBatchSaleSubmit(
+    saleData: BatchSaleData
+  ) {
     try {
       setError('');
 
-      await createSale({
-        item_id: Number(saleFormData.item_id),
-        sale_price: Number(saleFormData.sale_price),
-        owner_amount: Number(saleFormData.owner_amount),
-        shop_amount: Number(saleFormData.shop_amount),
-        sale_type: saleFormData.sale_type,
-        payment_method: saleFormData.payment_method,
-        notes: saleFormData.notes,
-        buyer_customer_id: Number(saleFormData.buyer_customer_id),
-      });
+      await createBatchSale(saleData);
 
-      setSaleFormData({
-        item_id: '',
-        sale_price: '',
-        sale_type: 'store',
-        payment_method: 'cash',
-        notes: '',
-        buyer_customer_id: '',
-        seller_share_percent: '40',
-        shop_share_percent: '60',
-        owner_amount: 0,
-        shop_amount: 0,
-      });
-
-      await loadSales();
-      await loadItems();
-      await loadCustomerCredits();
+      await Promise.all([
+        loadSales(),
+        loadItems(),
+        loadCustomerCredits(),
+        loadCustomers(),
+      ]);
     } catch (err: any) {
-      setError(err.message || 'Fehler beim Speichern des Verkaufs');
+      const message =
+        err.message || 'Fehler beim Speichern des Verkaufs';
+
+      setError(message);
+
+      /*
+       * Fehler weitergeben, damit SaleForm den Warenkorb
+       * bei einem fehlgeschlagenen Verkauf nicht leert.
+       */
+      throw err;
     }
-  }
-
-
-
-
-  function handleSaleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) {
-    const { name, value } = e.target;
-
-    setSaleFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
   }
   return (
     <Layout activeView={activeView} onChangeView={setActiveView}>
@@ -529,19 +493,12 @@ function App() {
       )}
 
       {activeView === 'sales' && (
-        <div className="content-grid">
+        <div className="sale-page">
           <SaleForm
-            formData={saleFormData}
             customers={customers}
+            customerCredits={customerCredits}
             items={items}
-            onChange={handleSaleChange}
-            onSubmit={handleSaleSubmit}
-          />
-
-          <SalesTable
-            sales={sales}
-            loading={loadingSales}
-            onReload={loadSales}
+            onSubmit={handleBatchSaleSubmit}
           />
         </div>
       )}
@@ -561,10 +518,13 @@ function App() {
       {activeView === 'historie' && (
         <Historie
           items={items}
-          loading={loadingItems}
+          sales={sales}
+          loadingItems={loadingItems}
+          loadingSales={loadingSales}
+          onReloadItems={loadItems}
+          onReloadSales={loadSales}
         />
       )}
-
       {activeView === 'customerDetails' && selectedCustomerId && (
 
 

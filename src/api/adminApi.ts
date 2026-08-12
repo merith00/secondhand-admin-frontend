@@ -6,6 +6,11 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 console.log('API BASE URL:', API_BASE_URL);
 
+import type {
+  BatchSaleData,
+  BatchSaleResult,
+} from '../types';
+
 if (!API_BASE_URL) {
   throw new Error('VITE_API_BASE_URL ist nicht gesetzt');
 }
@@ -219,6 +224,23 @@ export async function updateCustomer(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(updates),
+    }
+  );
+
+  return handleResponse(response);
+}
+
+export async function createBatchSale(
+  sale: BatchSaleData
+): Promise<BatchSaleResult> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/sales/batch`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(sale),
     }
   );
 
