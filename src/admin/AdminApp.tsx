@@ -578,6 +578,16 @@ function App() {
             setActiveView('customers');
           }}
           onAddItem={openItemModalForCustomer}
+
+          onCustomerUpdated={(updatedCustomer) => {
+            setCustomers((prev) =>
+              prev.map((customer) =>
+                customer.id === updatedCustomer.id
+                  ? updatedCustomer
+                  : customer
+              )
+            );
+          }}
         />
       )}
 

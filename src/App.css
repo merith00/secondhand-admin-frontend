@@ -1241,3 +1241,171 @@ th {
     min-width: 850px;
   }
 }
+
+/* =========================
+   KUNDENDETAILS - ADRESSE
+========================= */
+
+.customer-address {
+  width: 100%;
+}
+
+
+/* Überschrift + Bearbeiten */
+
+.address-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.address-header h2 {
+  margin: 0;
+}
+
+
+/* Bearbeiten Button */
+
+.address-edit-btn {
+  border: none;
+  background: #eaf2ff;
+  color: #2673dd;
+
+  padding: 7px 13px;
+  border-radius: 8px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.15s,
+    transform 0.15s;
+}
+
+.address-edit-btn:hover {
+  background: #dceaff;
+}
+
+.address-edit-btn:active {
+  transform: scale(0.97);
+}
+
+
+/* Eingabeformular */
+
+.address-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.address-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 10px;
+}
+
+.address-row:nth-of-type(2) {
+  grid-template-columns: 1fr 2fr;
+}
+
+
+/* Eingabefelder */
+
+.address-edit-form input {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 11px 13px;
+
+  border: 1px solid #ccd4df;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #27364a;
+
+  font-size: 14px;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.address-edit-form input::placeholder {
+  color: #9aa5b1;
+}
+
+.address-edit-form input:focus {
+  outline: none;
+
+  border-color: #2f80ed;
+
+  box-shadow:
+    0 0 0 3px rgba(47, 128, 237, 0.12);
+}
+
+
+/* Buttons unten */
+
+.address-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  margin-top: 5px;
+}
+
+.address-actions .primary-btn,
+.address-actions .secondary-btn {
+  width: auto;
+  min-width: 100px;
+  padding: 9px 16px;
+  border-radius: 8px;
+}
+
+
+/* Fehlermeldung */
+
+.address-error {
+  padding: 10px 12px;
+
+  background: #feecec;
+  color: #bd2424;
+
+  border: 1px solid #ffd3d3;
+  border-radius: 8px;
+
+  font-size: 13px;
+}
+
+
+/* Speichern während Anfrage */
+
+.address-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+/* Handy */
+
+@media (max-width: 600px) {
+
+  .address-row,
+  .address-row:nth-of-type(2) {
+    grid-template-columns: 1fr;
+  }
+
+  .address-actions {
+    flex-direction: column-reverse;
+  }
+
+  .address-actions .primary-btn,
+  .address-actions .secondary-btn {
+    width: 100%;
+  }
+}

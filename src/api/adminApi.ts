@@ -201,3 +201,26 @@ export async function deleteItemOption(id: number) {
 
   return handleResponse(response);
 }
+
+export async function updateCustomer(
+  customerId: number,
+  updates: {
+    street?: string;
+    house_number?: string;
+    postal_code?: string;
+    city?: string;
+  }
+) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/customers/${customerId}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    }
+  );
+
+  return handleResponse(response);
+}

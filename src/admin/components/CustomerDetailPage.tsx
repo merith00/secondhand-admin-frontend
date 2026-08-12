@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react';
 import type { Customer, Item, Sale } from '../../types';
+import { updateCustomer } from '../../api/adminApi';
 import ItemImageShow from './ItemImageShow';
+
 
 type CustomerDetailPageProps = {
   customerId: number;
@@ -8,6 +11,7 @@ type CustomerDetailPageProps = {
   sales: Sale[];
   onBack: () => void;
   onAddItem: (customerId: number) => void;
+  onCustomerUpdated: (customer: Customer) => void;
 };
 
 export default function CustomerDetailPage({
@@ -17,8 +21,56 @@ export default function CustomerDetailPage({
   sales,
   onBack,
   onAddItem,
+  onCustomerUpdated,
 }: CustomerDetailPageProps) {
   const customer = customers.find((c) => c.id === customerId);
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [savingAddress, setSavingAddress] = useState(false);
+  const [addressError, setAddressError] = useState('');
+
+  const [addressForm, setAddressForm] = useState({
+    street: '',
+    house_number: '',
+    postal_code: '',
+    city: '',
+  });
+
+
+  useEffect(() => {
+    if (!customer) return;
+
+    setAddressForm({
+      street: customer.street || '',
+      house_number: customer.house_number || '',
+      postal_code: customer.postal_code || '',
+      city: customer.city || '',
+    });
+  }, [customer]);
+
+
+  async function handleSaveAddress() {
+    if (!customer) return;
+
+    try {
+      setSavingAddress(true);
+      setAddressError('');
+
+      const updatedCustomer = await updateCustomer(
+        customer.id,
+        addressForm
+      );
+
+      onCustomerUpdated(updatedCustomer);
+
+      setIsEditingAddress(false);
+    } catch (err: any) {
+      setAddressError(
+        err.message || 'Adresse konnte nicht gespeichert werden'
+      );
+    } finally {
+      setSavingAddress(false);
+    }
+  }
 
   if (!customer) {
     return (
@@ -70,17 +122,17 @@ export default function CustomerDetailPage({
 
       <div className="customer-grid">
 
-      <button className="secondary-btn back-btn" onClick={onBack}>
-        ← Zurück zur Kundenliste
-      </button>
+        <button className="secondary-btn back-btn" onClick={onBack}>
+          ← Zurück zur Kundenliste
+        </button>
 
-      <button
-        className="primary-btn"
-        onClick={() => onAddItem(customerId)}
-        style={{margin: '0px 0px 0px 220px'}}
-      >
-        Kleidungsstück hinzufügen
-      </button>
+        <button
+          className="primary-btn"
+          onClick={() => onAddItem(customerId)}
+          style={{ margin: '0px 0px 0px 220px' }}
+        >
+          Kleidungsstück hinzufügen
+        </button>
       </div>
 
       <div className="customer-grid">
@@ -99,12 +151,139 @@ export default function CustomerDetailPage({
               </p>
             </div>
 
-            <div>
-              <h2>Adresse</h2>
-              <p><strong>Ort:</strong> {customer.city || '-'}</p>
-              <p><strong>Straße:</strong> {customer.street || '-'}</p>
-              <p><strong>Hausnummer:</strong> {customer.house_number || '-'}</p>
-              <p><strong>Postleitzahl:</strong> {customer.postal_code || '-'}</p>
+            <div className="customer-address">
+
+              <div className="address-header">
+                <h2>Adresse</h2>
+
+                {!isEditingAddress && (
+                  <button
+                    type="button"
+                    className="address-edit-btn"
+                    onClick={() => setIsEditingAddress(true)}
+                  >
+                    Bearbeiten
+                  </button>
+                )}
+              </div>
+
+
+              {!isEditingAddress ? (
+                <>
+                  <p>
+                    <strong>Straße:</strong>{' '}
+                    {customer.street || '-'}
+                  </p>
+
+                  <p>
+                    <strong>Hausnummer:</strong>{' '}
+                    {customer.house_number || '-'}
+                  </p>
+
+                  <p>
+                    <strong>Postleitzahl:</strong>{' '}
+                    {customer.postal_code || '-'}
+                  </p>
+
+                  <p>
+                    <strong>Ort:</strong>{' '}
+                    {customer.city || '-'}
+                  </p>
+                </>
+              ) : (
+                <div className="address-edit-form">
+
+                  <div className="address-row">
+                    <input
+                      type="text"
+                      placeholder="Straße"
+                      value={addressForm.street}
+                      onChange={(e) =>
+                        setAddressForm((prev) => ({
+                          ...prev,
+                          street: e.target.value,
+                        }))
+                      }
+                    />
+
+                    <input
+                      type="text"
+                      placeholder="Hausnummer"
+                      value={addressForm.house_number}
+                      onChange={(e) =>
+                        setAddressForm((prev) => ({
+                          ...prev,
+                          house_number: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div className="address-row">
+                    <input
+                      type="text"
+                      placeholder="PLZ"
+                      value={addressForm.postal_code}
+                      onChange={(e) =>
+                        setAddressForm((prev) => ({
+                          ...prev,
+                          postal_code: e.target.value,
+                        }))
+                      }
+                    />
+
+                    <input
+                      type="text"
+                      placeholder="Ort"
+                      value={addressForm.city}
+                      onChange={(e) =>
+                        setAddressForm((prev) => ({
+                          ...prev,
+                          city: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+
+                  {addressError && (
+                    <div className="address-error">
+                      {addressError}
+                    </div>
+                  )}
+
+                  <div className="address-actions">
+
+                    <button
+                      type="button"
+                      className="secondary-btn"
+                      onClick={() => {
+                        setIsEditingAddress(false);
+
+                        setAddressForm({
+                          street: customer.street || '',
+                          house_number: customer.house_number || '',
+                          postal_code: customer.postal_code || '',
+                          city: customer.city || '',
+                        });
+                      }}
+                    >
+                      Abbrechen
+                    </button>
+
+                    <button
+                      type="button"
+                      className="primary-btn"
+                      onClick={handleSaveAddress}
+                      disabled={savingAddress}
+                    >
+                      {savingAddress ? 'Speichern...' : 'Speichern'}
+                    </button>
+
+                  </div>
+
+                </div>
+              )}
+
             </div>
           </div>
         </section>
