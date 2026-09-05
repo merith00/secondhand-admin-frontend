@@ -74,7 +74,7 @@ export type Sale = {
   owner_amount: number;
   shop_amount: number;
   sale_type: 'store' | 'online';
-  payment_method: 'cash' | 'bank_transfer';
+  payment_method: 'cash' | 'bank_transfer' | 'paypal';
   notes?: string;
   title: string;
   brand?: string;

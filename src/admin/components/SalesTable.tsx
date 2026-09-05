@@ -116,7 +116,7 @@ export default function SalesTable({
                   <td>{Number(sale.owner_amount).toFixed(2)} €</td>
                   <td>{Number(sale.shop_amount).toFixed(2)} €</td>
                   <td>{sale.sale_type === 'store' ? 'Laden' : 'Online'}</td>
-                  <td>{sale.payment_method === 'cash' ? 'Bar' : 'Überweisung'}</td>
+                  <td>{sale.payment_method === 'cash' ? 'Bar' : sale.payment_method === 'paypal' ? 'PayPal' : 'Überweisung'}</td>
                 </tr>
               ))}
 

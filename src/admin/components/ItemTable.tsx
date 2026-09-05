@@ -55,7 +55,7 @@ export default function ItemTable({
                   <td>{item.category || '-'}</td>
                   <td>{item.size || '-'}</td>
                   <td>{item.color || '-'}</td>
-                  <td>{Number(item.price).toFixed(2)} €</td>
+                  <td>{Number(item.start_price).toFixed(2)} €</td>
                   <td>
                     {item.first_name} {item.last_name}
                   </td>
