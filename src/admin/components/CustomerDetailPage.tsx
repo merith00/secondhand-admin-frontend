@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import type { Customer, Item, Sale } from '../../types';
-import { updateCustomer } from '../../api/adminApi';
+import { updateCustomer, updateItem } from '../../api/adminApi';
 import ItemImageShow from './ItemImageShow';
 import { generateCustomerPdf } from '../../utils/customerPdf';
 
@@ -13,6 +13,7 @@ type CustomerDetailPageProps = {
   onBack: () => void;
   onAddItem: (customerId: number) => void;
   onCustomerUpdated: (customer: Customer) => void;
+  onItemUpdated: (item: Item) => void;
 };
 
 export default function CustomerDetailPage({
@@ -23,11 +24,19 @@ export default function CustomerDetailPage({
   onBack,
   onAddItem,
   onCustomerUpdated,
+  onItemUpdated,
 }: CustomerDetailPageProps) {
   const customer = customers.find((c) => c.id === customerId);
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
   const [addressError, setAddressError] = useState('');
+  const [editingItemId, setEditingItemId] = useState<number | null>(null);
+  const [savingItem, setSavingItem] = useState(false);
+  const [itemError, setItemError] = useState('');
+  const [itemForm, setItemForm] = useState({
+    title: '', description: '', category: '', size: '', brand: '', color: '',
+    price: '', is_online_visible: false,
+  });
 
   const [addressForm, setAddressForm] = useState({
     street: '',
@@ -70,6 +79,50 @@ export default function CustomerDetailPage({
       );
     } finally {
       setSavingAddress(false);
+    }
+  }
+
+  function startEditingItem(item: Item) {
+    setEditingItemId(item.id);
+    setItemError('');
+    setItemForm({
+      title: item.title || '',
+      description: item.description || '',
+      category: item.category || '',
+      size: item.size || '',
+      brand: item.brand || '',
+      color: item.color || '',
+      price: String(item.start_price ?? ''),
+      is_online_visible: Number(item.is_online_visible) === 1,
+    });
+  }
+
+  async function handleSaveItem(itemId: number) {
+    const price = Number(itemForm.price.replace(',', '.'));
+    if (!itemForm.title.trim() || !Number.isFinite(price) || price < 0) {
+      setItemError('Bitte Titel und einen gültigen Preis eingeben.');
+      return;
+    }
+
+    try {
+      setSavingItem(true);
+      setItemError('');
+      const updatedItem = await updateItem(itemId, {
+        title: itemForm.title.trim(),
+        description: itemForm.description.trim(),
+        category: itemForm.category.trim(),
+        size: itemForm.size.trim(),
+        brand: itemForm.brand.trim(),
+        color: itemForm.color.trim(),
+        price,
+        is_online_visible: itemForm.is_online_visible ? 1 : 0,
+      });
+      onItemUpdated(updatedItem);
+      setEditingItemId(null);
+    } catch (err: any) {
+      setItemError(err.message || 'Kleidungsstück konnte nicht gespeichert werden.');
+    } finally {
+      setSavingItem(false);
     }
   }
 
@@ -359,11 +412,12 @@ export default function CustomerDetailPage({
             <tr>
               <th>Bild</th>
               <th>Titel</th>
+              <th>Kommentar</th>
               <th>Kategorie</th>
               <th>Größe</th>
               <th>Verfügbar seit</th>
               <th>Angedachter Preis</th>
-
+              <th>Aktion</th>
             </tr>
           </thead>
           <tbody>
@@ -374,8 +428,9 @@ export default function CustomerDetailPage({
                 );
 
               return (
-                <tr
-                  key={item.id}
+                <Fragment key={item.id}>
+                  <tr
+                    key={item.id}
                   className={
                     isOverdue
                       ? 'customer-item-overdue'
@@ -386,19 +441,62 @@ export default function CustomerDetailPage({
                     <ItemImageShow imageUrl={item.image_url} />
                   </td>
                   <td>{item.title}</td>
+                  <td>{item.description || '-'}</td>
                   <td>{item.category || '-'}</td>
                   <td>{item.size || '-'}</td>
                   <td>{item.created_at ? new Date(item.created_at).toLocaleDateString() : '-'}</td>
                   <td>{item.start_price} €</td>
-
-                </tr>
+                  <td>
+                    <button
+                      type="button"
+                      className="item-edit-btn"
+                      onClick={() => startEditingItem(item)}
+                    >
+                      Bearbeiten
+                    </button>
+                  </td>
+                  </tr>
+                  {editingItemId === item.id && (
+                    <tr className="item-edit-row">
+                    <td colSpan={7}>
+                      <form
+                        className="item-edit-form"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          handleSaveItem(item.id);
+                        }}
+                      >
+                        <h4>Kleidungsstück bearbeiten</h4>
+                        <div className="item-edit-fields">
+                          <input required value={itemForm.title} placeholder="Titel" onChange={(e) => setItemForm((prev) => ({ ...prev, title: e.target.value }))} />
+                          <input value={itemForm.category} placeholder="Kategorie" onChange={(e) => setItemForm((prev) => ({ ...prev, category: e.target.value }))} />
+                          <input value={itemForm.size} placeholder="Größe" onChange={(e) => setItemForm((prev) => ({ ...prev, size: e.target.value }))} />
+                          <input value={itemForm.brand} placeholder="Marke" onChange={(e) => setItemForm((prev) => ({ ...prev, brand: e.target.value }))} />
+                          <input value={itemForm.color} placeholder="Farbe" onChange={(e) => setItemForm((prev) => ({ ...prev, color: e.target.value }))} />
+                          <input required type="number" min="0" step="0.01" value={itemForm.price} placeholder="Preis" onChange={(e) => setItemForm((prev) => ({ ...prev, price: e.target.value }))} />
+                        </div>
+                        <textarea value={itemForm.description} placeholder="Beschreibung" rows={3} onChange={(e) => setItemForm((prev) => ({ ...prev, description: e.target.value }))} />
+                        <label className="checkbox-row item-edit-visibility">
+                          <input type="checkbox" checked={itemForm.is_online_visible} onChange={(e) => setItemForm((prev) => ({ ...prev, is_online_visible: e.target.checked }))} />
+                          Im Onlineshop sichtbar
+                        </label>
+                        {itemError && <p className="item-edit-error">{itemError}</p>}
+                        <div className="item-edit-actions">
+                          <button type="button" className="secondary-btn" onClick={() => setEditingItemId(null)} disabled={savingItem}>Abbrechen</button>
+                          <button type="submit" className="primary-btn" disabled={savingItem}>{savingItem ? 'Speichern...' : 'Änderungen speichern'}</button>
+                        </div>
+                      </form>
+                    </td>
+                    </tr>
+                  )}
+                </Fragment>
               );
             })}
 
-            {soldItems.length > 0 && (
+            {availableItems.length > 0 && (
 
               <tr>
-                <td colSpan={5}>Summe:</td>
+                <td colSpan={6}>Summe:</td>
                 <td><strong>
                   {availableItems
                     .reduce((sum, item) => sum + Number(item.start_price), 0)
@@ -408,7 +506,7 @@ export default function CustomerDetailPage({
             )}
             {availableItems.length === 0 && (
               <tr>
-                <td colSpan={6}>Keine vorhandenen Artikel.</td>
+                <td colSpan={7}>Keine vorhandenen Artikel.</td>
               </tr>
             )}
 

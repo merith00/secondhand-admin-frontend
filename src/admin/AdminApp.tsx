@@ -549,6 +549,13 @@ function App() {
               )
             );
           }}
+          onItemUpdated={(updatedItem) => {
+            setItems((previousItems) =>
+              previousItems.map((item) =>
+                item.id === updatedItem.id ? { ...item, ...updatedItem } : item
+              )
+            );
+          }}
         />
       )}
 

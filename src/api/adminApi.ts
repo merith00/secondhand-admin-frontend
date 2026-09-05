@@ -157,7 +157,16 @@ export async function deleteItemImage(itemId: number) {
 
 export async function updateItem(
   itemId: number,
-  updates: { is_online_visible?: number }
+  updates: {
+    title?: string;
+    description?: string;
+    category?: string;
+    size?: string;
+    brand?: string;
+    color?: string;
+    price?: number;
+    is_online_visible?: number;
+  }
 ) {
   const response = await fetch(`${API_BASE_URL}/api/items/${itemId}`, {
     method: 'PUT',

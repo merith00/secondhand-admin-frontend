@@ -1987,6 +1987,42 @@ th {
   border-left: 4px solid #dc2626;
 }
 
+/* Kleidungsstück in Kundendetails bearbeiten */
+.item-edit-btn {
+  border: none;
+  background: #eaf2ff;
+  color: #2673dd;
+  border-radius: 8px;
+  padding: 7px 11px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.item-edit-btn:hover { background: #dceaff; }
+
+.item-edit-row td { background: #f7faff; }
+
+.item-edit-form { display: flex; flex-direction: column; gap: 12px; }
+.item-edit-form h4 { margin: 0; color: #172235; }
+.item-edit-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.item-edit-form input, .item-edit-form textarea {
+  width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #ccd4df;
+  border-radius: 8px; background: #fff; color: #27364a; font: inherit;
+}
+.item-edit-form input:focus, .item-edit-form textarea:focus { outline: none; border-color: #2f80ed; box-shadow: 0 0 0 3px rgba(47, 128, 237, .12); }
+.item-edit-visibility { margin: 0; }
+.item-edit-error { margin: 0; color: #bd2424; font-weight: 600; }
+.item-edit-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.item-edit-actions .primary-btn, .item-edit-actions .secondary-btn { width: auto; }
+
+@media (max-width: 700px) {
+  .item-edit-fields { grid-template-columns: 1fr; }
+  .item-edit-actions { flex-direction: column-reverse; }
+  .item-edit-actions .primary-btn, .item-edit-actions .secondary-btn { width: 100%; }
+}
+
 
 /* =========================
    EXCEL-EXPORT
