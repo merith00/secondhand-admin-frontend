@@ -4,14 +4,12 @@ import ItemImageShow from './ItemImageShow';
 type ItemTableProps = {
   items: Item[];
   loading: boolean;
-  onReload: () => void;
   onToggleOnline: (itemId: number, isVisible: boolean) => void;
 };
 
 export default function ItemTable({
   items,
   loading,
-  onReload,
   onToggleOnline,
 }: ItemTableProps) {
 
@@ -20,9 +18,6 @@ export default function ItemTable({
     <section className="card">
       <div className="card-header">
         <h3>Kleidungsstücke</h3>
-        <button className="secondary-btn" onClick={onReload}>
-          Neu laden
-        </button>
       </div>
 
       {loading ? (

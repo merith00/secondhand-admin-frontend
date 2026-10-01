@@ -3,23 +3,18 @@ import type { Customer } from '../../types';
 type CustomerTableProps = {
   customers: Customer[];
   loading: boolean;
-  onReload: () => void;
   onCustomerClick: (customerId: number) => void;
 };
 
 export default function CustomerTable({
   customers,
   loading,
-  onReload,
   onCustomerClick,
 }: CustomerTableProps) {
   return (
     <section className="card">
       <div className="card-header">
         <h3>Kundenliste</h3>
-        <button className="secondary-btn" onClick={onReload}>
-          Neu laden
-        </button>
       </div>
 
       {loading ? (

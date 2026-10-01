@@ -1,3 +1,4 @@
+import { errorMessage } from '../../utils/errors';
 import { useState } from 'react';
 import { uploadItemImage, deleteItemImage } from '../../api/adminApi';
 
@@ -17,6 +18,7 @@ export default function ItemImageUpload({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState('');
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] || null;
@@ -34,6 +36,7 @@ export default function ItemImageUpload({
     if (!selectedFile) return;
 
     try {
+      setError('');
       setIsUploading(true);
       const result = await uploadItemImage(itemId, selectedFile);
 
@@ -42,21 +45,26 @@ export default function ItemImageUpload({
       onUploaded?.(result.image_url);
     } catch (error) {
       console.error(error);
-      alert('Bild-Upload fehlgeschlagen');
+      setError(errorMessage(error, 'Bild-Upload fehlgeschlagen.'));
     } finally {
       setIsUploading(false);
     }
   }
 
   async function handleDelete() {
+    if (isUploading) return;
     try {
+      setError('');
+      setIsUploading(true);
       await deleteItemImage(itemId);
       setSelectedFile(null);
       setPreviewUrl(null);
       onDeleted?.();
     } catch (error) {
       console.error(error);
-      alert('Bild konnte nicht gelöscht werden');
+      setError(errorMessage(error, 'Bild konnte nicht gelöscht werden.'));
+    } finally {
+      setIsUploading(false);
     }
   }
 
@@ -64,6 +72,7 @@ export default function ItemImageUpload({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {error && <div className="error-box" role="alert">{error}</div>}
       {shownImage ? (
         <img
           src={shownImage}
@@ -105,7 +114,7 @@ export default function ItemImageUpload({
       </button>
 
       {currentImageUrl && (
-        <button type="button" onClick={handleDelete}>
+        <button type="button" onClick={handleDelete} disabled={isUploading}>
           Bild löschen
         </button>
       )}

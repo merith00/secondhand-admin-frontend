@@ -10,8 +10,6 @@ type HistorieProps = {
   sales: Sale[];
   loadingItems: boolean;
   loadingSales: boolean;
-  onReloadItems: () => void;
-  onReloadSales: () => void;
 };
 
 
@@ -27,8 +25,6 @@ export default function Historie({
   sales,
   loadingItems,
   loadingSales,
-  onReloadItems,
-  onReloadSales,
 }: HistorieProps) {
   const [activeTab, setActiveTab] =
     useState<HistoryTab>('available');
@@ -155,17 +151,6 @@ export default function Historie({
                 mindestens drei Monaten im Bestand.
               </p>
             </div>
-
-            <button
-              type="button"
-              className="secondary-btn history-reload-btn"
-              onClick={onReloadItems}
-              disabled={loadingItems}
-            >
-              {loadingItems
-                ? 'Wird geladen...'
-                : 'Aktualisieren'}
-            </button>
           </div>
 
 
@@ -284,7 +269,6 @@ export default function Historie({
   sales={sales}
   customers={customers}
   loading={loadingSales}
-  onReload={onReloadSales}
 />
         </div>
       )}

@@ -3,7 +3,6 @@ import type { AdminShopOrder } from '../../types';
 type ShopOrdersTableProps = {
   orders: AdminShopOrder[];
   loading: boolean;
-  onReload: () => void;
 };
 
 function getStatusLabel(status: AdminShopOrder['order_status']) {
@@ -37,15 +36,11 @@ function getPaymentLabel(paymentMethod: AdminShopOrder['payment_method']) {
 export default function ShopOrdersTable({
   orders,
   loading,
-  onReload,
 }: ShopOrdersTableProps) {
   return (
     <section className="card">
       <div className="card-header">
         <h3>Online-Bestellungen</h3>
-        <button className="secondary-btn" onClick={onReload}>
-          Neu laden
-        </button>
       </div>
 
       {loading ? (

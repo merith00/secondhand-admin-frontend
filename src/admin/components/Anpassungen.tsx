@@ -1,3 +1,4 @@
+import { errorMessage } from '../../utils/errors';
 import { useEffect, useState } from 'react';
 
 import {
@@ -64,9 +65,9 @@ export default function Anpassungen() {
             const data = await fetchItemOptions();
 
             setOptions(data);
-        } catch (err: any) {
+        } catch (err: unknown) {
             setError(
-                err.message || 'Anpassungen konnten nicht geladen werden'
+                errorMessage(err, 'Anpassungen konnten nicht geladen werden')
             );
         } finally {
             setLoading(false);
@@ -100,9 +101,9 @@ export default function Anpassungen() {
             }));
 
             await loadOptions();
-        } catch (err: any) {
+        } catch (err: unknown) {
             setError(
-                err.message || 'Eintrag konnte nicht hinzugefügt werden'
+                errorMessage(err, 'Eintrag konnte nicht hinzugefügt werden')
             );
         }
     }
@@ -123,9 +124,9 @@ export default function Anpassungen() {
             await deleteItemOption(option.id);
 
             await loadOptions();
-        } catch (err: any) {
+        } catch (err: unknown) {
             setError(
-                err.message || 'Eintrag konnte nicht gelöscht werden'
+                errorMessage(err, 'Eintrag konnte nicht gelöscht werden')
             );
         }
     }

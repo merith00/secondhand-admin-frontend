@@ -1,40 +1,22 @@
-//var API_BASE_URL = import.meta.env.VITE_API_URL || '';
-//API_BASE_URL = 'https://api.markensecondhand.com';
-//API_BASE_URL = 'http://localhost:5000'
-//API_BASE_URL = '';*/
+import { request as sendRequest, handleResponse, ApiError } from './request';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
-console.log('API BASE URL:', API_BASE_URL);
 
 import type {
   BatchSaleData,
   BatchSaleResult,
 } from '../types';
 
-if (!API_BASE_URL) {
-  throw new Error('VITE_API_BASE_URL ist nicht gesetzt');
+async function request(url: string, options?: RequestInit) {
+  if (!API_BASE_URL) throw new ApiError('Die Serveradresse ist nicht konfiguriert. Bitte die App-Konfiguration prüfen.');
+  return sendRequest(url, options);
 }
 
 
-async function handleResponse(response: Response) {
-  if (!response.ok) {
-    let message = 'Unbekannter Fehler';
-
-    try {
-      const error = await response.json();
-      message = error.message || message;
-    } catch {
-      // absichtlich leer
-    }
-
-    throw new Error(message);
-  }
-
-  return response.json();
-}
 
 export async function fetchCustomers() {
-  const response = await fetch(`${API_BASE_URL}/api/customers`);
+  const response = await request(`${API_BASE_URL}/api/customers`);
   return handleResponse(response);
 }
 
@@ -46,7 +28,7 @@ export async function createCustomer(customer: {
   phone: string;
   email: string;
 }) {
-  const response = await fetch(`${API_BASE_URL}/api/customers`, {
+  const response = await request(`${API_BASE_URL}/api/customers`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -58,7 +40,7 @@ export async function createCustomer(customer: {
 }
 
 export async function fetchItems() {
-  const response = await fetch(`${API_BASE_URL}/api/items`);
+  const response = await request(`${API_BASE_URL}/api/items`);
   return handleResponse(response);
 }
 
@@ -75,7 +57,7 @@ export async function createItem(item: {
   is_online_visible: number;
   image_url?: string;
 }) {
-  const response = await fetch(`${API_BASE_URL}/api/items`, {
+  const response = await request(`${API_BASE_URL}/api/items`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -87,7 +69,7 @@ export async function createItem(item: {
 }
 
 export async function fetchSales() {
-  const response = await fetch(`${API_BASE_URL}/api/sales`);
+  const response = await request(`${API_BASE_URL}/api/sales`);
   return handleResponse(response);
 }
 
@@ -101,7 +83,7 @@ export async function createSale(sale: {
   notes?: string;
   buyer_customer_id: number;
 }) {
-  const response = await fetch(`${API_BASE_URL}/api/sales`, {
+  const response = await request(`${API_BASE_URL}/api/sales`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -113,7 +95,7 @@ export async function createSale(sale: {
 }
 
 export async function fetchCustomerCredits() {
-  const response = await fetch(`${API_BASE_URL}/api/customers/credits/overview`);
+  const response = await request(`${API_BASE_URL}/api/customers/credits/overview`);
   return handleResponse(response);
 }
 
@@ -121,7 +103,7 @@ export async function fetchCustomerCredits() {
 /* ... deine bisherigen Admin-Funktionen ... */
 
 export async function fetchShopOrders() {
-  const response = await fetch(`${API_BASE_URL}/api/shop/orders`);
+  const response = await request(`${API_BASE_URL}/api/shop/orders`);
   return handleResponse(response);
 }
 
@@ -129,30 +111,20 @@ export async function uploadItemImage(itemId: number, file: File) {
   const formData = new FormData();
   formData.append('image', file, file.name);
 
-  const response = await fetch(`${API_BASE_URL}/api/items/${itemId}/image`, {
+  const response = await request(`${API_BASE_URL}/api/items/${itemId}/image`, {
     method: 'POST',
     body: formData,
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Bild-Upload fehlgeschlagen');
-  }
-
-  return response.json();
+  return handleResponse(response);
 }
 
 export async function deleteItemImage(itemId: number) {
-  const response = await fetch(`/api/items/${itemId}/image`, {
+  const response = await request(`${API_BASE_URL}/api/items/${itemId}/image`, {
     method: 'DELETE',
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Bild löschen fehlgeschlagen');
-  }
-
-  return response.json();
+  return handleResponse(response);
 }
 
 export async function updateItem(
@@ -168,7 +140,7 @@ export async function updateItem(
     is_online_visible?: number;
   }
 ) {
-  const response = await fetch(`${API_BASE_URL}/api/items/${itemId}`, {
+  const response = await request(`${API_BASE_URL}/api/items/${itemId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -185,7 +157,7 @@ export async function fetchItemOptions(type?: string) {
     ? `${API_BASE_URL}/api/item-options?type=${encodeURIComponent(type)}`
     : `${API_BASE_URL}/api/item-options`;
 
-  const response = await fetch(url);
+  const response = await request(url);
 
   return handleResponse(response);
 }
@@ -194,7 +166,7 @@ export async function createItemOption(data: {
   type: 'category' | 'size' | 'brand' | 'color';
   value: string;
 }) {
-  const response = await fetch(`${API_BASE_URL}/api/item-options`, {
+  const response = await request(`${API_BASE_URL}/api/item-options`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -206,7 +178,7 @@ export async function createItemOption(data: {
 }
 
 export async function deleteItemOption(id: number) {
-  const response = await fetch(
+  const response = await request(
     `${API_BASE_URL}/api/item-options/${id}`,
     {
       method: 'DELETE',
@@ -225,7 +197,7 @@ export async function updateCustomer(
     city?: string;
   }
 ) {
-  const response = await fetch(
+  const response = await request(
     `${API_BASE_URL}/api/customers/${customerId}`,
     {
       method: 'PUT',
@@ -242,7 +214,7 @@ export async function updateCustomer(
 export async function createBatchSale(
   sale: BatchSaleData
 ): Promise<BatchSaleResult> {
-  const response = await fetch(
+  const response = await request(
     `${API_BASE_URL}/api/sales/batch`,
     {
       method: 'POST',

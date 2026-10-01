@@ -260,6 +260,14 @@ export default function SaleForm({
     }
   }
 
+  useEffect(() => {
+    const guard = (event: Event) => {
+      if (submitting || (cartItems.length > 0 && !window.confirm('Verkauf verlassen und den noch nicht gespeicherten Warenkorb verwerfen?'))) event.preventDefault();
+    };
+    window.addEventListener('admin:before-back', guard);
+    return () => window.removeEventListener('admin:before-back', guard);
+  }, [cartItems.length, submitting]);
+
   return (
     <section className="card batch-sale-card">
       <div className="batch-sale-header">

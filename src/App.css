@@ -2081,3 +2081,59 @@ th {
     width: 100%;
   }
 }
+
+/* Keep intrinsic table/form widths inside their own responsive containers. */
+.sidebar { flex-shrink: 0; }
+.main-content, .card, .history-card, .order-card, .batch-sale-card,
+.customer-page, .history-page, .sale-page, .orders-list,
+.customer-grid > *, .customer-info-grid > *, .order-grid > *,
+.form-group, .sale-item-picker > *, .adjustments-page > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.table-wrapper, .history-table-wrapper, .sale-cart-table-wrapper {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+input, select, textarea { min-width: 0; max-width: 100%; }
+.card-header, .history-content-header, .address-header { flex-wrap: wrap; gap: 12px; }
+.customer-info-grid p, .order-grid p, .order-notes, .option-value { overflow-wrap: anywhere; }
+.modal-content { min-width: 0; max-height: calc(100dvh - 32px); }
+@media (max-width: 900px) {
+  .app-layout { flex-direction: column; }
+  .sidebar {
+    width: 100%; max-width: 100%; flex-direction: row; overflow-x: auto;
+    padding: 12px; gap: 8px; position: sticky; top: 0; z-index: 20;
+    padding-top: max(12px, env(safe-area-inset-top));
+  }
+  .sidebar h2 { display: none; }
+  .nav-btn { flex: 0 0 auto; white-space: nowrap; min-height: 44px; }
+  .content-grid, .customer-grid, .customer-info-grid, .order-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 700px) {
+  .main-content { padding: 12px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  .card-header, .history-content-header { align-items: flex-start; flex-direction: column; }
+  .card-header h3 { margin-bottom: 0; }
+  .history-tabs, .address-actions, .item-edit-actions { flex-wrap: wrap; }
+  .history-tab { flex: 1 1 140px; }
+  .batch-sale-header { flex-wrap: wrap; }
+  .sale-item-picker, .sale-details-grid, .form-row-two, .item-edit-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sale-summary-row { gap: 10px; flex-wrap: wrap; }
+  .option-add-row { flex-direction: column; }
+  .option-add-row .primary-btn { width: 100%; }
+  .option-list-item > span { min-width: 0; overflow-wrap: anywhere; }
+  .option-list-item .delete-btn { flex-shrink: 0; }
+  .modal-backdrop { padding: 12px; }
+  .modal-content { padding: 16px; width: 100%; max-height: calc(100dvh - 24px); }
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 16px; }
+  button { min-height: 44px; }
+  .card h2, .card h3, .history-content-header h3 { overflow-wrap: anywhere; }
+}

@@ -4,14 +4,12 @@ import type { CustomerCredit } from '../../types';
 type CustomerCreditsTableProps = {
   credits: CustomerCredit[];
   loading: boolean;
-  onReload: () => void;
   onCustomerClick: (customerId: number) => void;
 };
 
 export default function CustomerCreditsTable({
   credits,
   loading,
-  onReload,
   onCustomerClick,
 }: CustomerCreditsTableProps) {
 
@@ -36,9 +34,6 @@ export default function CustomerCreditsTable({
           />
           Nur Kunden mit vorhandenen Kleidungsstücken oder Guthaben anzeigen
         </label>
-        <button className="secondary-btn" onClick={onReload}>
-          Neu laden
-        </button>
 
 
       </div>

@@ -1,3 +1,4 @@
+import { errorMessage } from '../../utils/errors';
 import { useMemo, useEffect, useState } from 'react';
 import type {
   Customer,
@@ -52,6 +53,7 @@ export default function ItemForm({
 
   const [itemOptions, setItemOptions] = useState<ItemOption[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
+  const [optionsError, setOptionsError] = useState('');
 
   useEffect(() => {
     async function loadItemOptions() {
@@ -61,10 +63,8 @@ export default function ItemForm({
         const data = await fetchItemOptions();
 
         setItemOptions(data);
-      } catch (err: any) {
-        // setOptionsError(
-        //   err.message || 'Auswahlmöglichkeiten konnten nicht geladen werden'
-        // );
+      } catch (err: unknown) {
+        setOptionsError(errorMessage(err, 'Auswahlmöglichkeiten konnten nicht geladen werden.'));
       } finally {
         setLoadingOptions(false);
       }
@@ -93,6 +93,7 @@ export default function ItemForm({
   return (
     <section className="card">
       <h3>Neues Kleidungsstück anlegen</h3>
+      {optionsError && <div className="error-box" role="alert">{optionsError}</div>}
 
       <form className="form-grid" onSubmit={onSubmit}>
         <select

@@ -13,14 +13,12 @@ type SalesTableProps = {
   sales: Sale[];
   customers: Customer[];
   loading: boolean;
-  onReload: () => void;
 };
 
 export default function SalesTable({
   sales,
   customers,
   loading,
-  onReload,
 }: SalesTableProps) {
 
   const [exporting, setExporting] =
@@ -68,15 +66,6 @@ export default function SalesTable({
             {exporting
               ? 'Excel wird erstellt...'
               : 'Excel herunterladen'}
-          </button>
-
-          <button
-            type="button"
-            className="secondary-btn"
-            onClick={onReload}
-            disabled={loading}
-          >
-            Neu laden
           </button>
         </div>
       </div>

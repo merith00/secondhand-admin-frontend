@@ -1,3 +1,4 @@
+import { errorMessage } from '../../utils/errors';
 import { Fragment, useEffect, useState } from 'react';
 import type { Customer, Item, Sale } from '../../types';
 import { updateCustomer, updateItem } from '../../api/adminApi';
@@ -12,8 +13,8 @@ type CustomerDetailPageProps = {
   sales: Sale[];
   onBack: () => void;
   onAddItem: (customerId: number) => void;
-  onCustomerUpdated: (customer: Customer) => void;
-  onItemUpdated: (item: Item) => void;
+  onCustomerUpdated: (customer: Customer) => void | Promise<void>;
+  onItemUpdated: (item: Item) => void | Promise<void>;
 };
 
 export default function CustomerDetailPage({
@@ -70,12 +71,12 @@ export default function CustomerDetailPage({
         addressForm
       );
 
-      onCustomerUpdated(updatedCustomer);
+      await onCustomerUpdated(updatedCustomer);
 
       setIsEditingAddress(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setAddressError(
-        err.message || 'Adresse konnte nicht gespeichert werden'
+        errorMessage(err, 'Adresse konnte nicht gespeichert werden')
       );
     } finally {
       setSavingAddress(false);
@@ -117,14 +118,29 @@ export default function CustomerDetailPage({
         price,
         is_online_visible: itemForm.is_online_visible ? 1 : 0,
       });
-      onItemUpdated(updatedItem);
+      await onItemUpdated(updatedItem);
       setEditingItemId(null);
-    } catch (err: any) {
-      setItemError(err.message || 'Kleidungsstück konnte nicht gespeichert werden.');
+    } catch (err: unknown) {
+      setItemError(errorMessage(err, 'Kleidungsstück konnte nicht gespeichert werden.'));
     } finally {
       setSavingItem(false);
     }
   }
+
+  useEffect(() => {
+    const guard = (event: Event) => {
+      if (savingAddress || savingItem) { event.preventDefault(); return; }
+      if (isEditingAddress || editingItemId !== null) {
+        event.preventDefault();
+        if (window.confirm('Bearbeitung abbrechen und nicht gespeicherte Änderungen verwerfen?')) {
+          setIsEditingAddress(false);
+          setEditingItemId(null);
+        }
+      }
+    };
+    window.addEventListener('admin:before-back', guard);
+    return () => window.removeEventListener('admin:before-back', guard);
+  }, [isEditingAddress, editingItemId, savingAddress, savingItem]);
 
   if (!customer) {
     return (
@@ -407,6 +423,7 @@ export default function CustomerDetailPage({
 
       <section className="card">
         <h3>Noch vorhandene Kleidung</h3>
+        <div className="table-wrapper">
         <table>
           <thead>
             <tr>
@@ -512,11 +529,13 @@ export default function CustomerDetailPage({
 
           </tbody>
         </table>
+        </div>
       </section>
 
       <section className="card">
         <h3>Verkaufte Kleidung</h3>
 
+        <div className="table-wrapper">
         <table>
           <thead>
             <tr>
@@ -568,11 +587,13 @@ export default function CustomerDetailPage({
             )}
           </tbody>
         </table>
+        </div>
       </section>
 
       <section className="card">
         <h3>Gekaufte Kleidung</h3>
 
+        <div className="table-wrapper">
         <table>
           <thead>
             <tr>
@@ -619,6 +640,7 @@ export default function CustomerDetailPage({
             )}
           </tbody>
         </table>
+        </div>
       </section>
     </div>
   );
