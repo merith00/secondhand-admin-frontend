@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import type {Customer,  Item, Sale } from '../../types';
 import SalesTable from './SalesTable';
@@ -10,10 +10,15 @@ type HistorieProps = {
   sales: Sale[];
   loadingItems: boolean;
   loadingSales: boolean;
+  salesMonth: string;
+  onSalesMonthChange: (month: string) => void;
+  onItemClick: (itemId: number) => void;
+  activeTab: HistoryTab;
+  onTabChange: (tab: HistoryTab) => void;
 };
 
 
-type HistoryTab = 'available' | 'sales';
+export type HistoryTab = 'available' | 'sales';
 
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
@@ -25,9 +30,13 @@ export default function Historie({
   sales,
   loadingItems,
   loadingSales,
+  salesMonth,
+  onSalesMonthChange,
+  onItemClick,
+  activeTab,
+  onTabChange,
 }: HistorieProps) {
-  const [activeTab, setActiveTab] =
-    useState<HistoryTab>('available');
+
 
 
   function getDaysInStore(createdAt?: string) {
@@ -96,6 +105,7 @@ export default function Historie({
     <div className="history-page">
       <div className="history-header">
         <div>
+          <span className="history-eyebrow">SECOND HAND · ÜBERSICHT</span>
           <h2>Historie</h2>
 
           <p>
@@ -113,7 +123,8 @@ export default function Historie({
               ? 'history-tab active'
               : 'history-tab'
           }
-          onClick={() => setActiveTab('available')}
+          aria-pressed={activeTab === 'available'}
+          onClick={() => onTabChange('available')}
         >
           Noch vorhanden
 
@@ -129,7 +140,8 @@ export default function Historie({
               ? 'history-tab active'
               : 'history-tab'
           }
-          onClick={() => setActiveTab('sales')}
+          aria-pressed={activeTab === 'sales'}
+          onClick={() => onTabChange('sales')}
         >
           Verkaufshistorie
 
@@ -142,6 +154,11 @@ export default function Historie({
 
       {activeTab === 'available' && (
         <section className="history-card">
+          <div className="history-metrics history-stock-metrics" aria-label="Bestandskennzahlen">
+            <div className="history-metric"><span>Im Bestand</span><strong>{availableItems.length}</strong><small>Kleidungsstücke vorhanden</small></div>
+            <div className="history-metric history-metric-highlight"><span>Angedachter Warenwert</span><strong>{availableItems.reduce((sum, item) => sum + Number(item.start_price || 0), 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</strong><small>Summe der angesetzten Preise</small></div>
+            <div className="history-metric history-metric-warning"><span>Länger als drei Monate</span><strong>{availableItems.filter(item => isOlderThanThreeMonths(item.created_at)).length}</strong><small>rot im Bestand markiert</small></div>
+          </div>
           <div className="history-content-header">
             <div>
               <h3>Noch vorhandene Kleidungsstücke</h3>
@@ -194,30 +211,31 @@ export default function Historie({
                     return (
                       <tr
                         key={item.id}
+                        onClick={() => onItemClick(item.id)}
                         className={
                           isOld
-                            ? 'history-old-item'
-                            : ''
+                            ? 'history-old-item item-clickable-row'
+                            : 'item-clickable-row'
                         }
                       >
-                        <td>#{item.id}</td>
+                        <td data-label="Artikelnummer">#{item.id}</td>
 
-                        <td className="history-title">
-                          {item.title}
+                        <td data-label="Kleidungsstück" className="history-title">
+                          <button type="button" className="link-button" aria-label={`Details zu ${item.title} anzeigen`} onClick={(event) => { event.stopPropagation(); onItemClick(item.id); }}>{item.title}</button>
                         </td>
 
-                        <td>{item.brand || '–'}</td>
+                        <td data-label="Marke">{item.brand || '–'}</td>
 
-                        <td>{item.category || '–'}</td>
+                        <td data-label="Kategorie">{item.category || '–'}</td>
 
-                        <td>{item.size || '–'}</td>
+                        <td data-label="Größe">{item.size || '–'}</td>
 
-                        <td>
+                        <td data-label="Eigentümer">
                           {item.first_name}{' '}
                           {item.last_name}
                         </td>
 
-                        <td>
+                        <td data-label="Eingang">
                           {item.created_at
                             ? new Date(
                                 item.created_at
@@ -227,7 +245,7 @@ export default function Historie({
                             : '–'}
                         </td>
 
-                        <td>
+                        <td data-label="Im Bestand">
                           <span
                             className={
                               isOld
@@ -269,6 +287,9 @@ export default function Historie({
   sales={sales}
   customers={customers}
   loading={loadingSales}
+  selectedMonth={salesMonth}
+  onMonthChange={onSalesMonthChange}
+  onItemClick={onItemClick}
 />
         </div>
       )}

@@ -22,7 +22,7 @@ function Field({ label, value }: { label: string; value?: string | number | null
 }
 
 export default function ItemDetailPage({ item, customers, sales, orders, loading, onBack, onCustomerClick }: Props) {
-  const back = <button type="button" className="secondary-btn" onClick={onBack}>← Zurück zu den Kleidungsstücken</button>;
+  const back = <button type="button" className="secondary-btn" onClick={onBack}>← Zurück</button>;
   if (!item) return <section className="card">{back}<p role="status">{loading ? 'Kleidungsstück wird geladen…' : 'Dieses Kleidungsstück ist nicht mehr in der Übersicht vorhanden.'}</p></section>;
   const owner = customers.find(customer => customer.id === item.owner_customer_id);
   const itemSales = sales.filter(sale => sale.item_id === item.id);

@@ -18,7 +18,7 @@ import { fetchShopOrders } from '../api/adminApi';
 import ShopOrdersTable from './components/ShopOrdersTable';
 import CustomerDetailPage from './components/CustomerDetailPage';
 import Anpassungen from './components/Anpassungen';
-import Historie from './components/Historie';
+import Historie, { type HistoryTab } from './components/Historie';
 
 import type { AdminShopOrder } from '../types';
 
@@ -57,6 +57,8 @@ import {
 function App() {
   const [activeView, setActiveView] = useState<'customers' | 'items' | 'sales' | 'orders' | 'anpassungen' | 'historie' | 'customerDetails' | 'itemDetails'>('customers');
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [salesMonth, setSalesMonth] = useState('');
+  const [historyTab, setHistoryTab] = useState<HistoryTab>('available');
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const [items, setItems] = useState<Item[]>([]);
@@ -629,6 +631,11 @@ function App() {
           sales={sales}
           loadingItems={loadingItems}
           loadingSales={loadingSales}
+          salesMonth={salesMonth}
+          onSalesMonthChange={setSalesMonth}
+          activeTab={historyTab}
+          onTabChange={setHistoryTab}
+          onItemClick={(itemId) => { setSelectedItemId(itemId); navigate('itemDetails'); }}
         />
       )}
       {activeView === 'customerDetails' && selectedCustomerId && (

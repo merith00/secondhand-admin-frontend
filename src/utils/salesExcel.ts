@@ -1,3 +1,4 @@
+import { saleMonth, monthLabel, saleAmounts, SALES_VAT_RATE } from './salesPeriod';
 import ExcelJS from 'exceljs';
 
 import type { Customer, Sale } from '../types';
@@ -5,6 +6,7 @@ import type { Customer, Sale } from '../types';
 type SalesExcelData = {
   sales: Sale[];
   customers: Customer[];
+  month: string;
 };
 
 const EXCEL_MIME_TYPE =
@@ -23,7 +25,7 @@ function getSaleTypeLabel(saleType: Sale['sale_type']) {
 function getPaymentMethodLabel(
   paymentMethod: Sale['payment_method']
 ) {
-  return paymentMethod === 'cash' ? 'Bar' : 'Überweisung';
+  return paymentMethod === 'cash' ? 'Bar' : paymentMethod === 'paypal' ? 'PayPal' : 'Überweisung';
 }
 
 function getValidDate(value: string) {
@@ -32,18 +34,14 @@ function getValidDate(value: string) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function createFileName() {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-
-  return `Verkaufshistorie_${year}-${month}-${day}.xlsx`;
+function createFileName(month: string) {
+  return `Verkaufshistorie_${month === 'unknown' ? 'Ohne_Datum' : month}.xlsx`;
 }
 
-export async function exportSalesToExcel({
+export function createSalesWorkbook({
   sales,
   customers,
+  month,
 }: SalesExcelData) {
   const workbook = new ExcelJS.Workbook();
 
@@ -72,7 +70,7 @@ export async function exportSalesToExcel({
     { header: 'Verkäufer', key: 'seller_name', width: 24 },
     { header: 'Käufer-Nr.', key: 'buyer_number', width: 15 },
     { header: 'Käufer', key: 'buyer_name', width: 24 },
-    { header: 'Verkaufspreis', key: 'sale_price', width: 17 },
+    { header: 'Verkaufspreis brutto', key: 'sale_price', width: 17 },
     { header: 'Guthaben verwendet', key: 'credit_used', width: 20 },
     { header: 'Bar bezahlt', key: 'cash_paid', width: 15 },
     { header: 'Verkäuferanteil', key: 'owner_amount', width: 19 },
@@ -81,9 +79,12 @@ export async function exportSalesToExcel({
     { header: 'Zahlungsart', key: 'payment_method', width: 16 },
     { header: 'Barzahlung bestätigt', key: 'cash_confirmed', width: 21 },
     { header: 'Notizen', key: 'notes', width: 32 },
+    { header: 'Verkaufspreis netto', key: 'net_price', width: 23 },
+    { header: 'MwSt.', key: 'vat_amount', width: 17 },
+    { header: 'MwSt.-Satz', key: 'vat_rate', width: 15 },
   ];
 
-  const sortedSales = [...sales].sort((first, second) => {
+  const sortedSales = sales.filter(sale => saleMonth(sale.sale_date) === month).sort((first, second) => {
     return (
       new Date(second.sale_date).getTime() -
       new Date(first.sale_date).getTime()
@@ -95,6 +96,8 @@ export async function exportSalesToExcel({
       (customer) => customer.id === sale.buyer_customer_id
     );
 
+    const amounts = saleAmounts(Number(sale.sale_price || 0));
+    const rowNumber = worksheet.rowCount + 1;
     worksheet.addRow({
       transaction_id: sale.transaction_id || `Einzelverkauf-${sale.id}`,
       sale_id: sale.id,
@@ -107,7 +110,10 @@ export async function exportSalesToExcel({
       seller_name: `${sale.first_name} ${sale.last_name}`.trim(),
       buyer_number: buyer?.customer_number || '–',
       buyer_name: getCustomerName(buyer),
-      sale_price: Number(sale.sale_price || 0),
+      sale_price: amounts.gross,
+      net_price: { formula: `ROUND(L${rowNumber}/(1+W${rowNumber}),2)`, result: amounts.net },
+      vat_amount: { formula: `ROUND(L${rowNumber}-U${rowNumber},2)`, result: amounts.vat },
+      vat_rate: SALES_VAT_RATE,
       credit_used: Number(
         sale.buyer_credit_used ?? sale.sale_price ?? 0
       ),
@@ -149,15 +155,16 @@ export async function exportSalesToExcel({
 
   worksheet.autoFilter = {
     from: 'A1',
-    to: 'T1',
+    to: 'W1',
   };
 
-  const currencyColumns = ['L', 'M', 'N', 'O', 'P'];
+  const currencyColumns = ['L', 'M', 'N', 'O', 'P', 'U', 'V'];
 
   currencyColumns.forEach((columnLetter) => {
     worksheet.getColumn(columnLetter).numFmt = '#,##0.00 [$€-407]';
   });
 
+  worksheet.getColumn('W').numFmt = '0%';
   worksheet.getColumn('C').numFmt = 'dd.mm.yyyy hh:mm';
 
   for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
@@ -190,7 +197,9 @@ export async function exportSalesToExcel({
     const firstDataRow = 2;
     const lastDataRow = sortedSales.length + 1;
     const totalRow = worksheet.addRow({
-      title: 'Gesamtsummen',
+      title: 'Monatssummen',
+      net_price: { formula: `SUM(U${firstDataRow}:U${lastDataRow})`, result: sortedSales.reduce((sum, sale) => sum + saleAmounts(Number(sale.sale_price || 0)).net, 0) },
+      vat_amount: { formula: `SUM(V${firstDataRow}:V${lastDataRow})`, result: sortedSales.reduce((sum, sale) => sum + saleAmounts(Number(sale.sale_price || 0)).vat, 0) },
       sale_price: {
         formula: `SUM(L${firstDataRow}:L${lastDataRow})`,
       },
@@ -241,10 +250,16 @@ export async function exportSalesToExcel({
   };
 
   worksheet.headerFooter.oddHeader =
-    '&LVerkaufshistorie&R&D &T';
+    '&LVerkaufshistorie ' + monthLabel(month) + '&R&D &T';
   worksheet.headerFooter.oddFooter =
     '&LSecondhand Admin&RSeite &P von &N';
 
+  workbook.calcProperties.fullCalcOnLoad = true;
+  return workbook;
+}
+
+export async function exportSalesToExcel(data: SalesExcelData) {
+  const workbook = createSalesWorkbook(data);
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer as BlobPart], {
     type: EXCEL_MIME_TYPE,
@@ -253,7 +268,7 @@ export async function exportSalesToExcel({
   const link = document.createElement('a');
 
   link.href = url;
-  link.download = createFileName();
+  link.download = createFileName(data.month);
   document.body.appendChild(link);
   link.click();
   link.remove();

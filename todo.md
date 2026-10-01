@@ -49,3 +49,37 @@ Paypal
 
 
 Verkaufshistorie herunterladen 
+
+
+
+
+NEUES TODO 01.10.2026
+
+
+Kleidungsstückhinzufügen Detailsseite App anpassen
+
+Fotos machen geht nicht 
+
+App stlying gerade ziehen 
+
+app Fotos aufnehmen gerade ziehen 
+
+neuladen erweitern 
+
+
+nonatliche Historien 
+
+
+
+
+heuteige Datum bei Kleidungsstück einfügen 
+
+appel app
+
+Zahlen mit Steuern erweitern 
+
+brutto nett mit in die liste
+
+Steuer auf Verkäufer wieder zurück nehmen 
+
+shop Verkäufer 50 / 50 
