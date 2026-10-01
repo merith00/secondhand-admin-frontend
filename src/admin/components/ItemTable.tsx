@@ -4,6 +4,7 @@ import ItemImageShow from './ItemImageShow';
 type ItemTableProps = {
   items: Item[];
   loading: boolean;
+  onItemClick: (itemId: number) => void;
   onToggleOnline: (itemId: number, isVisible: boolean) => void;
 };
 
@@ -11,6 +12,7 @@ export default function ItemTable({
   items,
   loading,
   onToggleOnline,
+  onItemClick,
 }: ItemTableProps) {
 
 
@@ -41,11 +43,11 @@ export default function ItemTable({
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={item.id}>
+                <tr key={item.id} className="item-clickable-row" onClick={() => onItemClick(item.id)}>
                   <td>
                     <ItemImageShow imageUrl={item.image_url} />
                   </td>
-                  <td>{item.title}</td>
+                  <td><button type="button" className="link-button" onClick={(event) => { event.stopPropagation(); onItemClick(item.id); }} aria-label={`Details zu ${item.title} anzeigen`}>{item.title}</button></td>
                   <td>{item.brand || '-'}</td>
                   <td>{item.category || '-'}</td>
                   <td>{item.size || '-'}</td>
@@ -57,6 +59,8 @@ export default function ItemTable({
                   <td>
                     <input
                       type="checkbox"
+                      aria-label={`${item.title} im Onlineshop anzeigen`}
+                      onClick={(event) => event.stopPropagation()}
                       checked={item.is_online_visible === 1}
                       onChange={(e) => onToggleOnline(item.id, e.target.checked)}
                     />
@@ -69,7 +73,7 @@ export default function ItemTable({
 
               {items.length === 0 && (
                 <tr>
-                  <td colSpan={9}>Noch keine Kleidungsstücke vorhanden.</td>
+                  <td colSpan={10}>Noch keine Kleidungsstücke vorhanden.</td>
                 </tr>
               )}
             </tbody>

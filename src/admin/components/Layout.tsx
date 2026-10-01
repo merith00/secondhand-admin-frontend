@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 
 type LayoutProps = {
-  activeView: 'customers' | 'items' | 'sales' | 'orders' | 'customerDetails' | 'anpassungen' | 'historie';
-  onChangeView: (view: 'customers' | 'items' | 'sales' | 'orders' | 'customerDetails' | 'anpassungen' | 'historie') => void;
+  activeView: 'customers' | 'items' | 'sales' | 'orders' | 'itemDetails' | 'customerDetails' | 'anpassungen' | 'historie';
+  onChangeView: (view: 'customers' | 'items' | 'sales' | 'orders' | 'itemDetails' | 'customerDetails' | 'anpassungen' | 'historie') => void;
   children: ReactNode;
 };
 
@@ -24,7 +24,7 @@ export default function Layout({
         </button>
 
         <button
-          className={activeView === 'items' ? 'nav-btn active' : 'nav-btn'}
+          className={(activeView === 'items' || activeView === 'itemDetails') ? 'nav-btn active' : 'nav-btn'}
           onClick={() => onChangeView('items')}
         >
           Kleidungsstücke

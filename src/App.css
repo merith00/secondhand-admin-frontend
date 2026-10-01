@@ -2137,3 +2137,25 @@ input, select, textarea { min-width: 0; max-width: 100%; }
   button { min-height: 44px; }
   .card h2, .card h3, .history-content-header h3 { overflow-wrap: anywhere; }
 }
+
+/* Clothing details */
+.item-clickable-row { cursor: pointer; }
+.item-clickable-row:hover td { background: #f0f6ff; }
+.item-detail-page { display: grid; gap: 20px; min-width: 0; }
+.item-detail-page .customer-detail-toolbar { margin-bottom: 0; }
+.item-detail-heading { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: 24px; align-items: start; }
+.item-detail-heading h2 { margin-top: 0; }
+.item-detail-photo { min-width: 0; }
+.item-detail-number { color: #64748b; margin-top: 0; }
+.item-detail-price { font-size: 26px; font-weight: 700; color: #2563eb; }
+.item-detail-description, .item-detail-fields dd { white-space: pre-wrap; overflow-wrap: anywhere; }
+.item-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.item-detail-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 0; }
+.item-detail-fields dt { color: #64748b; font-size: 13px; margin-bottom: 5px; }
+.item-detail-fields dd { margin: 0; line-height: 1.5; }
+.item-detail-record + .item-detail-record { border-top: 1px solid #e3e8ef; padding-top: 20px; margin-top: 20px; }
+@media (max-width: 700px) {
+  .item-detail-heading, .item-detail-grid { grid-template-columns: minmax(0, 1fr); }
+  .item-detail-photo { width: min(100%, 320px); margin: auto; }
+}
+@media (max-width: 420px) { .item-detail-fields { grid-template-columns: minmax(0, 1fr); } }

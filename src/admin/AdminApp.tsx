@@ -1,3 +1,4 @@
+import ItemDetailPage from './components/ItemDetailPage';
 import { App as NativeApp } from '@capacitor/app';
 import type { PluginListenerHandle } from '@capacitor/core';
 import { errorMessage } from '../utils/errors';
@@ -54,8 +55,9 @@ import {
 } from '../api/adminApi';
 
 function App() {
-  const [activeView, setActiveView] = useState<'customers' | 'items' | 'sales' | 'orders' | 'anpassungen' | 'historie' | 'customerDetails'>('customers');
+  const [activeView, setActiveView] = useState<'customers' | 'items' | 'sales' | 'orders' | 'anpassungen' | 'historie' | 'customerDetails' | 'itemDetails'>('customers');
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const [items, setItems] = useState<Item[]>([]);
 
@@ -473,9 +475,9 @@ function App() {
     }
   }
 
-  const viewHistory = useRef<{ view: typeof activeView; customerId: number | null }[]>([]);
-  const currentView = useRef({ view: activeView, customerId: selectedCustomerId });
-  currentView.current = { view: activeView, customerId: selectedCustomerId };
+  const viewHistory = useRef<{ view: typeof activeView; customerId: number | null; itemId: number | null }[]>([]);
+  const currentView = useRef({ view: activeView, customerId: selectedCustomerId, itemId: selectedItemId });
+  currentView.current = { view: activeView, customerId: selectedCustomerId, itemId: selectedItemId };
   function navigate(view: typeof activeView) {
     if (view === activeView || savingRef.current || isUploadingImage) return;
     const event = new Event('admin:before-back', { cancelable: true });
@@ -495,6 +497,7 @@ function App() {
     const previous = viewHistory.current.pop();
     if (previous) {
       setSelectedCustomerId(previous.customerId);
+      setSelectedItemId(previous.itemId);
       setActiveView(previous.view);
     } else if (activeView !== 'customers') {
       setSelectedCustomerId(null);
@@ -588,8 +591,13 @@ function App() {
             items={items}
             loading={loadingItems}
             onToggleOnline={handleToggleOnline}
+            onItemClick={(itemId) => { setSelectedItemId(itemId); navigate('itemDetails'); }}
           />
         </div>
+      )}
+
+      {activeView === 'itemDetails' && (
+        <ItemDetailPage item={items.find(item => item.id === selectedItemId)} customers={customers} sales={sales} orders={shopOrders} loading={loadingItems} onBack={() => backAction.current()} onCustomerClick={(customerId) => { setSelectedCustomerId(customerId); navigate('customerDetails'); }} />
       )}
 
       {activeView === 'sales' && (
