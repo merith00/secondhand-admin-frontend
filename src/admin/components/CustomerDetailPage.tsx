@@ -427,6 +427,7 @@ export default function CustomerDetailPage({
         <table>
           <thead>
             <tr>
+              <th>ID</th>
               <th>Bild</th>
               <th>Titel</th>
               <th>Kommentar</th>
@@ -454,6 +455,7 @@ export default function CustomerDetailPage({
                       : ''
                   }
                 >
+                  <td>#{item.id}</td>
                   <td>
                     <ItemImageShow imageUrl={item.image_url} />
                   </td>
@@ -475,7 +477,7 @@ export default function CustomerDetailPage({
                   </tr>
                   {editingItemId === item.id && (
                     <tr className="item-edit-row">
-                    <td colSpan={7}>
+                    <td colSpan={9}>
                       <form
                         className="item-edit-form"
                         onSubmit={(event) => {
@@ -513,7 +515,7 @@ export default function CustomerDetailPage({
             {availableItems.length > 0 && (
 
               <tr>
-                <td colSpan={6}>Summe:</td>
+                <td colSpan={7}>Summe:</td>
                 <td><strong>
                   {availableItems
                     .reduce((sum, item) => sum + Number(item.start_price), 0)
@@ -523,7 +525,7 @@ export default function CustomerDetailPage({
             )}
             {availableItems.length === 0 && (
               <tr>
-                <td colSpan={7}>Keine vorhandenen Artikel.</td>
+                <td colSpan={9}>Keine vorhandenen Artikel.</td>
               </tr>
             )}
 
@@ -539,6 +541,7 @@ export default function CustomerDetailPage({
         <table>
           <thead>
             <tr>
+              <th>ID</th>
               <th>Bild</th>
               <th>Titel</th>
               <th>Kategorie</th>
@@ -553,6 +556,7 @@ export default function CustomerDetailPage({
           <tbody>
             {soldItems.map((item) => (
               <tr key={item.id} >
+                <td>#{item.id}</td>
                 <td>
                   <ItemImageShow imageUrl={item.image_url} />
                 </td>
@@ -570,7 +574,7 @@ export default function CustomerDetailPage({
 
             {soldItems.length > 0 && (
               <tr>
-                <td colSpan={8}>Summe:</td>
+                <td colSpan={9}>Summe:</td>
                 <td><strong>
                   {soldItems
                     .reduce((sum, item) => sum + Number(item.verkauferAnteil), 0)
@@ -582,7 +586,7 @@ export default function CustomerDetailPage({
 
             {soldItems.length === 0 && (
               <tr>
-                <td colSpan={6}>Noch keine verkauften Artikel.</td>
+                <td colSpan={10}>Noch keine verkauften Artikel.</td>
               </tr>
             )}
           </tbody>
@@ -597,6 +601,7 @@ export default function CustomerDetailPage({
         <table>
           <thead>
             <tr>
+              <th>ID</th>
               <th>Bild</th>
               <th>Titel</th>
               <th>Kategorie</th>
@@ -609,6 +614,7 @@ export default function CustomerDetailPage({
           <tbody>
             {purchasedItems.map((item) => (
               <tr key={item!.id}>
+                <td>#{item!.id}</td>
                 <td>
                   <ItemImageShow imageUrl={item!.image_url} />
                 </td>
@@ -622,7 +628,7 @@ export default function CustomerDetailPage({
 
             {purchasedItems.length > 0 && (
               <tr>
-                <td colSpan={5}>Summe:</td>
+                <td colSpan={6}>Summe:</td>
                 <td><strong>
                   {purchasedItems
                     .reduce((sum, item) => sum + Number(item!.verkaufspreis), 0)
@@ -633,7 +639,7 @@ export default function CustomerDetailPage({
 
             {purchasedItems.length === 0 && (
               <tr>
-                <td colSpan={5}>
+                <td colSpan={7}>
                   Noch keine gekauften Artikel.
                 </td>
               </tr>

@@ -73,8 +73,10 @@ export function createSalesWorkbook({
     { header: 'Verkaufspreis brutto', key: 'sale_price', width: 17 },
     { header: 'Guthaben verwendet', key: 'credit_used', width: 20 },
     { header: 'Bar bezahlt', key: 'cash_paid', width: 15 },
+    { header: 'Verkäuferanteil brutto', key: 'owner_gross_amount', width: 25 },
     { header: 'Verkäuferauszahlung netto', key: 'owner_amount', width: 29 },
     { header: 'Shopanteil brutto', key: 'shop_amount', width: 22 },
+    { header: 'Shopanteil netto', key: 'shop_net_amount', width: 22 },
     { header: 'Verkaufsart', key: 'sale_type', width: 15 },
     { header: 'Zahlungsart', key: 'payment_method', width: 16 },
     { header: 'Barzahlung bestätigt', key: 'cash_confirmed', width: 21 },
@@ -111,15 +113,17 @@ export function createSalesWorkbook({
       buyer_number: buyer?.customer_number || '–',
       buyer_name: getCustomerName(buyer),
       sale_price: amounts.gross,
-      net_price: { formula: `ROUND(L${rowNumber}/(1+W${rowNumber}),2)`, result: amounts.net },
-      vat_amount: { formula: `ROUND(L${rowNumber}-U${rowNumber},2)`, result: amounts.vat },
+      net_price: { formula: `ROUND(L${rowNumber}/(1+Y${rowNumber}),2)`, result: amounts.net },
+      vat_amount: { formula: `ROUND(L${rowNumber}-W${rowNumber},2)`, result: amounts.vat },
       vat_rate: SALES_VAT_RATE,
       credit_used: Number(
         sale.buyer_credit_used ?? sale.sale_price ?? 0
       ),
       cash_paid: Number(sale.buyer_cash_paid || 0),
+      owner_gross_amount: { formula: `ROUND(L${rowNumber}-Q${rowNumber},2)`, result: Math.round((amounts.gross - Number(sale.shop_amount || 0)) * 100) / 100 },
       owner_amount: Number(sale.owner_amount || 0),
       shop_amount: Number(sale.shop_amount || 0),
+      shop_net_amount: { formula: `ROUND(Q${rowNumber}/(1+Y${rowNumber}),2)`, result: saleAmounts(Number(sale.shop_amount || 0)).net },
       sale_type: getSaleTypeLabel(sale.sale_type),
       payment_method: getPaymentMethodLabel(sale.payment_method),
       cash_confirmed: sale.cash_difference_confirmed ? 'Ja' : 'Nein',
@@ -155,16 +159,16 @@ export function createSalesWorkbook({
 
   worksheet.autoFilter = {
     from: 'A1',
-    to: 'W1',
+    to: 'Y1',
   };
 
-  const currencyColumns = ['L', 'M', 'N', 'O', 'P', 'U', 'V'];
+  const currencyColumns = ['L', 'M', 'N', 'O', 'P', 'Q', 'R', 'W', 'X'];
 
   currencyColumns.forEach((columnLetter) => {
     worksheet.getColumn(columnLetter).numFmt = '#,##0.00 [$€-407]';
   });
 
-  worksheet.getColumn('W').numFmt = '0%';
+  worksheet.getColumn('Y').numFmt = '0%';
   worksheet.getColumn('C').numFmt = 'dd.mm.yyyy hh:mm';
 
   for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
@@ -198,8 +202,10 @@ export function createSalesWorkbook({
     const lastDataRow = sortedSales.length + 1;
     const totalRow = worksheet.addRow({
       title: 'Monatssummen',
-      net_price: { formula: `SUM(U${firstDataRow}:U${lastDataRow})`, result: sortedSales.reduce((sum, sale) => sum + saleAmounts(Number(sale.sale_price || 0)).net, 0) },
-      vat_amount: { formula: `SUM(V${firstDataRow}:V${lastDataRow})`, result: sortedSales.reduce((sum, sale) => sum + saleAmounts(Number(sale.sale_price || 0)).vat, 0) },
+      owner_gross_amount: { formula: `SUM(O${firstDataRow}:O${lastDataRow})`, result: sortedSales.reduce((sum, sale) => sum + Math.round((saleAmounts(Number(sale.sale_price || 0)).gross - Number(sale.shop_amount || 0)) * 100), 0) / 100 },
+      shop_net_amount: { formula: `SUM(R${firstDataRow}:R${lastDataRow})`, result: sortedSales.reduce((sum, sale) => sum + Math.round(saleAmounts(Number(sale.shop_amount || 0)).net * 100), 0) / 100 },
+      net_price: { formula: `SUM(W${firstDataRow}:W${lastDataRow})`, result: sortedSales.reduce((sum, sale) => sum + saleAmounts(Number(sale.sale_price || 0)).net, 0) },
+      vat_amount: { formula: `SUM(X${firstDataRow}:X${lastDataRow})`, result: sortedSales.reduce((sum, sale) => sum + saleAmounts(Number(sale.sale_price || 0)).vat, 0) },
       sale_price: {
         formula: `SUM(L${firstDataRow}:L${lastDataRow})`,
       },
@@ -210,10 +216,10 @@ export function createSalesWorkbook({
         formula: `SUM(N${firstDataRow}:N${lastDataRow})`,
       },
       owner_amount: {
-        formula: `SUM(O${firstDataRow}:O${lastDataRow})`,
+        formula: `SUM(P${firstDataRow}:P${lastDataRow})`,
       },
       shop_amount: {
-        formula: `SUM(P${firstDataRow}:P${lastDataRow})`,
+        formula: `SUM(Q${firstDataRow}:Q${lastDataRow})`,
       },
     });
 
@@ -232,6 +238,21 @@ export function createSalesWorkbook({
       totalRow.getCell(columnLetter).numFmt = '#,##0.00 [$€-407]';
     });
   }
+
+  // Highlight shop income consistently across header, data and monthly totals.
+  ['shop_amount', 'shop_net_amount'].forEach((key) => {
+    const column = worksheet.getColumn(key);
+    for (let rowNumber = 1; rowNumber <= worksheet.rowCount; rowNumber += 1) {
+      const cell = worksheet.getRow(rowNumber).getCell(column.number);
+      const isHeader = rowNumber === 1;
+      const isTotal = sortedSales.length > 0 && rowNumber === worksheet.rowCount;
+      cell.fill = {
+        type: 'pattern', pattern: 'solid',
+        fgColor: { argb: isHeader ? 'FF166534' : isTotal ? 'FFBBF7D0' : 'FFECFDF5' },
+      };
+      cell.font = { bold: true, color: { argb: isHeader ? 'FFFFFFFF' : 'FF14532D' } };
+    }
+  });
 
   worksheet.pageSetup = {
     orientation: 'landscape',

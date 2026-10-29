@@ -38,7 +38,7 @@ export default function SalesTable({
   const months = [...new Set(sales.map(sale => saleMonth(sale.sale_date)))].sort((a, b) => a === 'unknown' ? 1 : b === 'unknown' ? -1 : b.localeCompare(a));
   const activeMonth = months.includes(selectedMonth) ? selectedMonth : months[0] || '';
   const monthlySales = sales.filter(sale => saleMonth(sale.sale_date) === activeMonth).sort((a, b) => new Date(b.sale_date).getTime() - new Date(a.sale_date).getTime());
-  const totals = monthlySales.reduce((sum, sale) => { const amounts = saleAmounts(Number(sale.sale_price)); return { gross: sum.gross + amounts.gross, net: sum.net + amounts.net, vat: sum.vat + amounts.vat }; }, { gross: 0, net: 0, vat: 0 });
+  const totals = monthlySales.reduce((sum, sale) => { const amounts = saleAmounts(Number(sale.shop_amount ?? 0)); return { gross: sum.gross + amounts.gross, net: sum.net + amounts.net, vat: sum.vat + amounts.vat }; }, { gross: 0, net: 0, vat: 0 });
 
   async function handleExcelExport() {
     try {
@@ -86,9 +86,9 @@ export default function SalesTable({
 
       {activeMonth && <div className="history-metrics" aria-label="Monatskennzahlen">
         <div className="history-metric"><span>Verkaufte Artikel</span><strong>{monthlySales.length}</strong><small>in diesem Monat</small></div>
-        <div className="history-metric history-metric-highlight"><span>Bruttoumsatz</span><strong>{totals.gross.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</strong><small>inklusive MwSt.</small></div>
-        <div className="history-metric"><span>Nettoumsatz</span><strong>{totals.net.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</strong><small>ohne MwSt.</small></div>
-        <div className="history-metric"><span>Mehrwertsteuer</span><strong>{totals.vat.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</strong><small>19 % MwSt.</small></div>
+        <div className="history-metric history-metric-highlight"><span>Shop-Bruttoumsatz</span><strong>{totals.gross.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</strong><small>Shopanteil inklusive MwSt.</small></div>
+        <div className="history-metric"><span>Shop-Nettoumsatz</span><strong>{totals.net.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</strong><small>Shopanteil ohne MwSt.</small></div>
+        <div className="history-metric"><span>Shop-Mehrwertsteuer</span><strong>{totals.vat.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</strong><small>19 % MwSt. im Shopanteil</small></div>
       </div>}
 
       {exportError && (

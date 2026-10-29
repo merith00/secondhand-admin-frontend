@@ -29,6 +29,7 @@ export default function ItemTable({
           <table>
             <thead>
               <tr>
+                <th>ID</th>
                 <th>Bild</th>
                 <th>Titel</th>
                 <th>Marke</th>
@@ -44,6 +45,7 @@ export default function ItemTable({
             <tbody>
               {items.map((item) => (
                 <tr key={item.id} className="item-clickable-row" onClick={() => onItemClick(item.id)}>
+                  <td>#{item.id}</td>
                   <td>
                     <ItemImageShow imageUrl={item.image_url} />
                   </td>
@@ -73,7 +75,7 @@ export default function ItemTable({
 
               {items.length === 0 && (
                 <tr>
-                  <td colSpan={10}>Noch keine Kleidungsstücke vorhanden.</td>
+                  <td colSpan={11}>Noch keine Kleidungsstücke vorhanden.</td>
                 </tr>
               )}
             </tbody>
