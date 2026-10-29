@@ -1,3 +1,4 @@
+import { saleAmounts } from '../../utils/salesPeriod';
 import { useEffect, useMemo, useState } from 'react';
 
 import type {
@@ -28,8 +29,8 @@ export default function SaleForm({
   const [paymentMethod, setPaymentMethod] =
     useState<'cash' | 'bank_transfer' | 'paypal'>('cash');
   const [notes, setNotes] = useState('');
-  const [sellerSharePercent, setSellerSharePercent] = useState(40);
-  const [shopSharePercent, setShopSharePercent] = useState(60);
+  const [sellerSharePercent, setSellerSharePercent] = useState(50);
+  const [shopSharePercent, setShopSharePercent] = useState(50);
   const [cashDifferenceConfirmed, setCashDifferenceConfirmed] =
     useState(false);
   const [cartItems, setCartItems] = useState<BatchSaleItem[]>([]);
@@ -84,11 +85,9 @@ export default function SaleForm({
   }
 
   function calculateAmounts(grossPrice: number) {
-    const netPrice = grossPrice / 1.19;
-    const vatAmount = grossPrice - netPrice;
-    const ownerAmount =
-      (grossPrice * sellerSharePercent) / 100 - vatAmount;
-    const shopAmount = (grossPrice * shopSharePercent) / 100;
+    const { gross, net: netPrice, vat: vatAmount } = saleAmounts(grossPrice);
+    const ownerAmount = Math.round(gross * 100 * sellerSharePercent / 100 / 1.19) / 100;
+    const shopAmount = Math.round(gross * shopSharePercent) / 100;
 
     return { netPrice, vatAmount, ownerAmount, shopAmount };
   }
@@ -245,8 +244,8 @@ export default function SaleForm({
       setSaleType('store');
       setPaymentMethod('cash');
       setNotes('');
-      setSellerSharePercent(40);
-      setShopSharePercent(60);
+      setSellerSharePercent(50);
+      setShopSharePercent(50);
       setCashDifferenceConfirmed(false);
       setCartItems([]);
     } catch (error: unknown) {
@@ -381,9 +380,9 @@ export default function SaleForm({
                     <tr>
                       <th>Artikel</th>
                       <th>Verkäufer</th>
-                      <th>Verkaufspreis</th>
-                      <th>Verkäufer erhält</th>
-                      <th>Shop erhält</th>
+                      <th>Käuferpreis (brutto)</th>
+                      <th>Verkäufer erhält (netto)</th>
+                      <th>Shop erhält (brutto)</th>
                       <th />
                     </tr>
                   </thead>
@@ -460,6 +459,7 @@ export default function SaleForm({
 
         <div className="batch-sale-section">
           <h3>3. Verkaufsdetails</h3>
+          <p>Standard: 50 % Verkäuferanteil, Auszahlung netto (Anteil ÷ 1,19). Der Shopanteil wird brutto angezeigt.</p>
 
           <div className="sale-details-grid">
             <div className="form-group">
@@ -548,13 +548,13 @@ export default function SaleForm({
             <strong>{totals.vat.toFixed(2)} €</strong>
           </div>
           <div className="sale-summary-row">
-            <span>Verkäufer erhalten</span>
+            <span>Verkäufer erhalten (netto)</span>
             <strong className="sale-owner-amount">
               {totals.owner.toFixed(2)} €
             </strong>
           </div>
           <div className="sale-summary-row">
-            <span>Shop erhält</span>
+            <span>Shop erhält (brutto)</span>
             <strong className="sale-shop-amount">
               {totals.shop.toFixed(2)} €
             </strong>
@@ -580,7 +580,7 @@ export default function SaleForm({
           )}
 
           <div className="sale-summary-row sale-summary-total">
-            <span>Gesamtsumme</span>
+            <span>Käuferpreis gesamt (brutto)</span>
             <strong>{totals.gross.toFixed(2)} €</strong>
           </div>
         </div>

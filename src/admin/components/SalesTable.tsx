@@ -110,8 +110,8 @@ export default function SalesTable({
                 <th>Brutto</th>
                 <th>Netto</th>
                 <th>MwSt. (19 %)</th>
-                <th>Verkäuferanteil</th>
-                <th>Shopanteil</th>
+                <th>Verkäuferauszahlung netto</th>
+                <th>Shopanteil brutto</th>
                 <th>Art</th>
                 <th>Zahlung</th>
               </tr>
@@ -127,8 +127,8 @@ export default function SalesTable({
                   <td data-label="Brutto">{saleAmounts(Number(sale.sale_price)).gross.toFixed(2)} €</td>
                   <td data-label="Netto">{saleAmounts(Number(sale.sale_price)).net.toFixed(2)} €</td>
                   <td data-label="MwSt. (19 %)">{saleAmounts(Number(sale.sale_price)).vat.toFixed(2)} €</td>
-                  <td data-label="Verkäuferanteil">{Number(sale.owner_amount).toFixed(2)} €</td>
-                  <td data-label="Shopanteil">{Number(sale.shop_amount).toFixed(2)} €</td>
+                  <td data-label="Verkäuferauszahlung netto">{Number(sale.owner_amount).toFixed(2)} €</td>
+                  <td data-label="Shopanteil brutto">{Number(sale.shop_amount).toFixed(2)} €</td>
                   <td data-label="Verkaufsart">{sale.sale_type === 'store' ? 'Laden' : 'Online'}</td>
                   <td data-label="Zahlungsart">{sale.payment_method === 'cash' ? 'Bar' : sale.payment_method === 'paypal' ? 'PayPal' : 'Überweisung'}</td>
                 </tr>
