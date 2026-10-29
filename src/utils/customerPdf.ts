@@ -1,3 +1,4 @@
+import { savePdf } from './savePdf';
 import { jsPDF } from 'jspdf';
 import { autoTable } from 'jspdf-autotable';
 
@@ -53,7 +54,7 @@ function cleanFileName(value: string) {
 }
 
 
-export function generateCustomerPdf({
+export async function generateCustomerPdf({
   customer,
   availableItems,
   soldItems,
@@ -731,5 +732,5 @@ export function generateCustomerPdf({
     .filter(Boolean)
     .join('_');
 
-  pdf.save(`${fileName}.pdf`);
+  return savePdf(pdf, `${fileName}.pdf`);
 }

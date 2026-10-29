@@ -33,6 +33,8 @@ export default function CustomerDetailPage({
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
   const [addressError, setAddressError] = useState('');
+  const [creatingPdf, setCreatingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState('');
   const [editingItemId, setEditingItemId] = useState<number | null>(null);
   const [savingItem, setSavingItem] = useState(false);
   const [itemError, setItemError] = useState('');
@@ -238,17 +240,25 @@ export default function CustomerDetailPage({
 
   const creditBalance = totalCreditEarned - totalCreditSpent;
 
-  function handleCreatePdf(
-    selectedCustomer: Customer
-  ) {
-    generateCustomerPdf({
-      customer: selectedCustomer,
-      availableItems,
-      soldItems,
-      purchasedItems,
-      creditBalance,
-    });
+  async function handleCreatePdf(selectedCustomer: Customer) {
+    if (creatingPdf) return;
+    setCreatingPdf(true);
+    setPdfError('');
+    try {
+      await generateCustomerPdf({
+        customer: selectedCustomer,
+        availableItems,
+        soldItems,
+        purchasedItems,
+        creditBalance,
+      });
+    } catch (err: unknown) {
+      setPdfError(errorMessage(err, 'PDF konnte nicht gespeichert werden. Bitte erneut versuchen.'));
+    } finally {
+      setCreatingPdf(false);
+    }
   }
+
 
   function isOlderThanThreeMonths(
     createdAt?: string
@@ -287,9 +297,11 @@ export default function CustomerDetailPage({
           <button
             type="button"
             className="pdf-btn"
+            disabled={creatingPdf}
+            aria-busy={creatingPdf}
             onClick={() => handleCreatePdf(customer)}
           >
-            PDF erstellen
+            {creatingPdf ? 'PDF wird gespeichert…' : 'PDF erstellen'}
           </button>
 
           <button
@@ -301,6 +313,8 @@ export default function CustomerDetailPage({
           </button>
         </div>
       </div>
+
+      {pdfError && <p className="error-message" role="alert">{pdfError}</p>}
 
       <div className="customer-grid">
         <section className="card">
