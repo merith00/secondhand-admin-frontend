@@ -1,7 +1,9 @@
+import { Capacitor } from '@capacitor/core';
+import { takePhotoWithCamera, pickPhotoFromGallery, webPathToBlob } from '../../utils/camera';
 import { errorMessage } from '../../utils/errors';
 import { Fragment, useEffect, useState } from 'react';
 import type { Customer, Item, Sale } from '../../types';
-import { updateCustomer, updateItem } from '../../api/adminApi';
+import { updateCustomer, updateItem, uploadItemImage } from '../../api/adminApi';
 import ItemImageShow from './ItemImageShow';
 import { generateCustomerPdf } from '../../utils/customerPdf';
 
@@ -34,6 +36,33 @@ export default function CustomerDetailPage({
   const [editingItemId, setEditingItemId] = useState<number | null>(null);
   const [savingItem, setSavingItem] = useState(false);
   const [itemError, setItemError] = useState('');
+  const [selectedItemImage, setSelectedItemImage] = useState<File | null>(null);
+  const [itemImagePreview, setItemImagePreview] = useState('');
+  const [pickingItemImage, setPickingItemImage] = useState(false);
+
+  useEffect(() => {
+    if (!selectedItemImage) { setItemImagePreview(''); return; }
+    const preview = URL.createObjectURL(selectedItemImage);
+    setItemImagePreview(preview);
+    return () => URL.revokeObjectURL(preview);
+  }, [selectedItemImage]);
+
+  async function pickItemImage(source: 'camera' | 'gallery') {
+    try {
+      setPickingItemImage(true);
+      setItemError('');
+      const photo = await (source === 'camera' ? takePhotoWithCamera() : pickPhotoFromGallery());
+      const blob = await webPathToBlob(photo.webPath);
+      setSelectedItemImage(new File([blob], `item-${Date.now()}.${photo.format || 'jpeg'}`, {
+        type: blob.type || 'image/jpeg',
+      }));
+    } catch (err: unknown) {
+      setItemError(errorMessage(err, 'Bild konnte nicht ausgewählt werden.'));
+    } finally {
+      setPickingItemImage(false);
+    }
+  }
+
   const [itemForm, setItemForm] = useState({
     title: '', description: '', category: '', size: '', brand: '', color: '',
     price: '', is_online_visible: false,
@@ -85,6 +114,7 @@ export default function CustomerDetailPage({
 
   function startEditingItem(item: Item) {
     setEditingItemId(item.id);
+    setSelectedItemImage(null);
     setItemError('');
     setItemForm({
       title: item.title || '',
@@ -99,6 +129,7 @@ export default function CustomerDetailPage({
   }
 
   async function handleSaveItem(itemId: number) {
+    if (savingItem || pickingItemImage) return;
     const price = Number(itemForm.price.replace(',', '.'));
     if (!itemForm.title.trim() || !Number.isFinite(price) || price < 0) {
       setItemError('Bitte Titel und einen gültigen Preis eingeben.');
@@ -118,7 +149,19 @@ export default function CustomerDetailPage({
         price,
         is_online_visible: itemForm.is_online_visible ? 1 : 0,
       });
-      await onItemUpdated(updatedItem);
+      let savedItem = updatedItem;
+      if (selectedItemImage) {
+        try {
+          const uploaded = await uploadItemImage(itemId, selectedItemImage);
+          savedItem = { ...updatedItem, image_url: uploaded.image_url };
+          setSelectedItemImage(null);
+        } catch (err: unknown) {
+          await onItemUpdated(updatedItem);
+          setItemError('Artikeldaten gespeichert. ' + errorMessage(err, 'Das Bild konnte nicht hochgeladen werden. Bitte erneut speichern.'));
+          return;
+        }
+      }
+      await onItemUpdated(savedItem);
       setEditingItemId(null);
     } catch (err: unknown) {
       setItemError(errorMessage(err, 'Kleidungsstück konnte nicht gespeichert werden.'));
@@ -129,7 +172,7 @@ export default function CustomerDetailPage({
 
   useEffect(() => {
     const guard = (event: Event) => {
-      if (savingAddress || savingItem) { event.preventDefault(); return; }
+      if (savingAddress || savingItem || pickingItemImage) { event.preventDefault(); return; }
       if (isEditingAddress || editingItemId !== null) {
         event.preventDefault();
         if (window.confirm('Bearbeitung abbrechen und nicht gespeicherte Änderungen verwerfen?')) {
@@ -140,7 +183,7 @@ export default function CustomerDetailPage({
     };
     window.addEventListener('admin:before-back', guard);
     return () => window.removeEventListener('admin:before-back', guard);
-  }, [isEditingAddress, editingItemId, savingAddress, savingItem]);
+  }, [isEditingAddress, editingItemId, savingAddress, savingItem, pickingItemImage]);
 
   if (!customer) {
     return (
@@ -485,24 +528,60 @@ export default function CustomerDetailPage({
                           handleSaveItem(item.id);
                         }}
                       >
-                        <h4>Kleidungsstück bearbeiten</h4>
-                        <div className="item-edit-fields">
-                          <input required value={itemForm.title} placeholder="Titel" onChange={(e) => setItemForm((prev) => ({ ...prev, title: e.target.value }))} />
-                          <input value={itemForm.category} placeholder="Kategorie" onChange={(e) => setItemForm((prev) => ({ ...prev, category: e.target.value }))} />
-                          <input value={itemForm.size} placeholder="Größe" onChange={(e) => setItemForm((prev) => ({ ...prev, size: e.target.value }))} />
-                          <input value={itemForm.brand} placeholder="Marke" onChange={(e) => setItemForm((prev) => ({ ...prev, brand: e.target.value }))} />
-                          <input value={itemForm.color} placeholder="Farbe" onChange={(e) => setItemForm((prev) => ({ ...prev, color: e.target.value }))} />
-                          <input required type="number" min="0" step="0.01" value={itemForm.price} placeholder="Preis" onChange={(e) => setItemForm((prev) => ({ ...prev, price: e.target.value }))} />
+                        <div className="item-edit-heading">
+                          <div><span className="item-edit-eyebrow">KLEIDUNGSSTÜCK #{item.id}</span><h4>Artikel bearbeiten</h4></div>
+                          <button type="button" className="item-edit-close" aria-label="Bearbeitung abbrechen" onClick={() => setEditingItemId(null)} disabled={savingItem || pickingItemImage}>×</button>
                         </div>
-                        <textarea value={itemForm.description} placeholder="Beschreibung" rows={3} onChange={(e) => setItemForm((prev) => ({ ...prev, description: e.target.value }))} />
+                        <fieldset disabled={savingItem || pickingItemImage} className="item-edit-image">
+                          <legend>Artikelbild</legend>
+                          <div className="item-edit-image-layout">
+                            <div className="item-edit-image-preview">
+                              {itemImagePreview
+                                ? <img src={itemImagePreview} alt="Vorschau des neuen Artikelbildes" />
+                                : <ItemImageShow imageUrl={item.image_url} size={160} />}
+                              {selectedItemImage && <span className="item-edit-image-badge">Neues Bild</span>}
+                            </div>
+                            <div className="item-edit-image-controls">
+                              <strong>{selectedItemImage ? 'Dein neues Artikelbild' : item.image_url ? 'Bild aktualisieren' : 'Ein Bild für deinen Artikel'}</strong>
+                              <p>Zeige das Kleidungsstück möglichst vollständig und bei gutem Licht.</p>
+                              {Capacitor.isNativePlatform() ? (
+                                <div className="item-edit-image-buttons">
+                                  <button type="button" className="item-edit-image-button" onClick={() => pickItemImage('camera')}>Foto aufnehmen</button>
+                                  <button type="button" className="item-edit-image-button item-edit-image-button-secondary" onClick={() => pickItemImage('gallery')}>Aus Galerie</button>
+                                </div>
+                              ) : (
+                                <label className="item-edit-image-button item-edit-file-button">
+                                  {item.image_url || selectedItemImage ? 'Anderes Bild auswählen' : 'Bild auswählen'}
+                                  <input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => {
+                                    setSelectedItemImage(event.target.files?.[0] || null);
+                                    setItemError('');
+                                    event.target.value = '';
+                                  }} />
+                                </label>
+                              )}
+                              {pickingItemImage && <p className="item-edit-image-status" role="status">Bild wird vorbereitet…</p>}
+                              {selectedItemImage && <button type="button" className="item-edit-image-reset" onClick={() => setSelectedItemImage(null)}>Auswahl zurücksetzen</button>}
+                              <small>Wird mit deinen Änderungen gespeichert.</small>
+                            </div>
+                          </div>
+                        </fieldset>
+                        <div className="item-edit-fields">
+                          <label>Titel<input required value={itemForm.title} placeholder="Titel" onChange={(e) => setItemForm((prev) => ({ ...prev, title: e.target.value }))} /></label>
+                          <label>Kategorie<input value={itemForm.category} placeholder="Kategorie" onChange={(e) => setItemForm((prev) => ({ ...prev, category: e.target.value }))} /></label>
+                          <label>Größe<input value={itemForm.size} placeholder="Größe" onChange={(e) => setItemForm((prev) => ({ ...prev, size: e.target.value }))} /></label>
+                          <label>Marke<input value={itemForm.brand} placeholder="Marke" onChange={(e) => setItemForm((prev) => ({ ...prev, brand: e.target.value }))} /></label>
+                          <label>Farbe<input value={itemForm.color} placeholder="Farbe" onChange={(e) => setItemForm((prev) => ({ ...prev, color: e.target.value }))} /></label>
+                          <label>Preis (€)<input required type="number" min="0" step="0.01" value={itemForm.price} placeholder="Preis" onChange={(e) => setItemForm((prev) => ({ ...prev, price: e.target.value }))} /></label>
+                        </div>
+                        <label className="item-edit-description">Beschreibung / Kommentar<textarea value={itemForm.description} placeholder="Beschreibung" rows={3} onChange={(e) => setItemForm((prev) => ({ ...prev, description: e.target.value }))} /></label>
                         <label className="checkbox-row item-edit-visibility">
                           <input type="checkbox" checked={itemForm.is_online_visible} onChange={(e) => setItemForm((prev) => ({ ...prev, is_online_visible: e.target.checked }))} />
                           Im Onlineshop sichtbar
                         </label>
                         {itemError && <p className="item-edit-error">{itemError}</p>}
                         <div className="item-edit-actions">
-                          <button type="button" className="secondary-btn" onClick={() => setEditingItemId(null)} disabled={savingItem}>Abbrechen</button>
-                          <button type="submit" className="primary-btn" disabled={savingItem}>{savingItem ? 'Speichern...' : 'Änderungen speichern'}</button>
+                          <button type="button" className="secondary-btn" onClick={() => setEditingItemId(null)} disabled={savingItem || pickingItemImage}>Abbrechen</button>
+                          <button type="submit" className="primary-btn" disabled={savingItem || pickingItemImage}>{savingItem ? 'Speichern...' : 'Änderungen speichern'}</button>
                         </div>
                       </form>
                     </td>
