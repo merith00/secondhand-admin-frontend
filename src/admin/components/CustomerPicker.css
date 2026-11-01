@@ -1,0 +1,14 @@
+.customer-picker { position: relative; min-width: 0; grid-column: 1 / -1; }
+.customer-picker > label { display: block; font-weight: 600; margin-bottom: 6px; }
+.customer-picker > input { box-sizing: border-box; width: 100%; }
+.customer-picker-results { position: absolute; z-index: 5; top: 100%; left: 0; right: 0; max-height: 240px; overflow-y: auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 8px 20px rgb(15 23 42 / .15); }
+.customer-picker-results ul { list-style: none; padding: 4px; margin: 0; }
+.customer-picker-results li { padding: 10px 12px; border-radius: 5px; cursor: pointer; }
+.customer-picker-results li:hover, .customer-picker-results li.is-active { background: #dbeafe; color: #1e3a8a; }
+.customer-picker-results p { padding: 8px 12px; margin: 0; color: #475569; }
+
+.customer-picker.option-picker { grid-column: auto; }
+
+.customer-picker-results .option-add-button { display: block; width: calc(100% - 8px); margin: 4px; padding: 10px 12px; border: 1px solid #bfdbfe; border-radius: 6px; background: #eff6ff; color: #1d4ed8; text-align: left; cursor: pointer; }
+.customer-picker-results .option-add-button:hover { background: #dbeafe; }
+.customer-picker-results .option-add-button:disabled { cursor: wait; opacity: .65; }

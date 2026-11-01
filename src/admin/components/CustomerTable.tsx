@@ -1,3 +1,8 @@
+import './CompactTables.css';
+import useTableSearch from './useTableSearch';
+import TableSearch from './TableSearch';
+import useTableSort from './useTableSort';
+import SortableHeader from './SortableHeader';
 import type { Customer } from '../../types';
 
 type CustomerTableProps = {
@@ -11,11 +16,32 @@ export default function CustomerTable({
   loading,
   onCustomerClick,
 }: CustomerTableProps) {
+  const { query, setQuery, filteredRows } = useTableSearch(customers, (customer) => [
+    customer.customer_number,
+    `${customer.first_name} ${customer.last_name}`,
+    customer.city,
+    customer.phone,
+    customer.email,
+    customer.is_active ? 'Aktiv' : 'Inaktiv',
+  ]);
+  const { sortedRows, sort, toggleSort } = useTableSort(filteredRows, {
+    customer_number: (customer) => customer.customer_number,
+    name: (customer) => `${customer.first_name} ${customer.last_name}`,
+    city: (customer) => customer.city,
+    phone: (customer) => customer.phone,
+    email: (customer) => customer.email,
+    status: (customer) => customer.is_active ? 'Aktiv' : 'Inaktiv',
+  }, 'customer_number');
+
   return (
-    <section className="card">
-      <div className="card-header">
+    <section className="card compact-table-card customer-list-card">
+      <div className="card-header table-header-search">
         <h3>Kundenliste</h3>
+      <TableSearch label="" query={query} onQueryChange={setQuery}
+        count={filteredRows.length} total={customers.length} loading={loading} />
       </div>
+
+
 
       {loading ? (
         <p>Lade Kunden...</p>
@@ -24,16 +50,22 @@ export default function CustomerTable({
           <table>
             <thead>
               <tr>
-                <th>Kundennr.</th>
-                <th>Name</th>
-                <th>Ort</th>
-                <th>Telefon</th>
-                <th>E-Mail</th>
-                <th>Status</th>
+                <SortableHeader direction={sort.key === 'customer_number' ? sort.direction : undefined} onSort={() => toggleSort('customer_number')}
+                  >Kundennr.</SortableHeader>
+                <SortableHeader direction={sort.key === 'name' ? sort.direction : undefined} onSort={() => toggleSort('name')}
+                  >Name</SortableHeader>
+                <SortableHeader direction={sort.key === 'city' ? sort.direction : undefined} onSort={() => toggleSort('city')}
+                  >Ort</SortableHeader>
+                <SortableHeader direction={sort.key === 'phone' ? sort.direction : undefined} onSort={() => toggleSort('phone')}
+                  >Telefon</SortableHeader>
+                <SortableHeader direction={sort.key === 'email' ? sort.direction : undefined} onSort={() => toggleSort('email')}
+                  >E-Mail</SortableHeader>
+                <SortableHeader direction={sort.key === 'status' ? sort.direction : undefined} onSort={() => toggleSort('status')}
+                  >Status</SortableHeader>
               </tr>
             </thead>
             <tbody>
-              {customers.map((customer) => (
+              {sortedRows.map((customer) => (
                 <tr key={customer.id}>
                   <td>{customer.customer_number || '-'}</td>
                   <td>
@@ -59,9 +91,9 @@ export default function CustomerTable({
                 </tr>
               ))}
 
-              {customers.length === 0 && (
+              {filteredRows.length === 0 && (
                 <tr>
-                  <td colSpan={6}>Noch keine Kunden vorhanden.</td>
+                  <td colSpan={6}>{query.trim() ? 'Keine Treffer für diese Suche.' : 'Noch keine Kunden vorhanden.'}</td>
                 </tr>
               )}
             </tbody>

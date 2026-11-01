@@ -34,7 +34,11 @@ export default function ItemImageShow({ imageUrl, size = 120 }: Props) {
 
   return (
     <img
-      src={fullImageUrl}
+      src={size <= 240 && fullImageUrl.includes('/uploads/items/')
+        ? fullImageUrl + (fullImageUrl.includes('?') ? '&' : '?') + 'size=thumbnail'
+        : fullImageUrl}
+      loading="lazy"
+      decoding="async"
       alt="Artikelbild"
       style={{
         width: size,

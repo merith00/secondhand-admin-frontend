@@ -1,3 +1,6 @@
+import './CompactItemForm.css';
+import OptionPicker from './OptionPicker';
+import CustomerPicker from './CustomerPicker';
 import { errorMessage } from '../../utils/errors';
 import { useMemo, useEffect, useState } from 'react';
 import type {
@@ -6,11 +9,13 @@ import type {
   ItemOption,
 } from '../../types';
 
-import { fetchItemOptions } from '../../api/adminApi';
+import { createItemOption, fetchItemOptions } from '../../api/adminApi';
 
 type ItemFormProps = {
   formData: ItemFormData;
   customers: Customer[];
+  onOwnerChange: (id: string) => void;
+  onOptionChange: (name: 'category' | 'brand' | 'color' | 'size', value: string) => void;
   selectedImage: File | null;
   onImageChange: (file: File | null) => void;
   onChange: (
@@ -28,6 +33,8 @@ type ItemFormProps = {
 export default function ItemForm({
   formData,
   customers,
+  onOwnerChange,
+  onOptionChange,
   selectedImage,
   onImageChange,
   onChange,
@@ -74,6 +81,15 @@ export default function ItemForm({
   }, []);
 
 
+  async function addItemOption(type: 'category' | 'brand' | 'color' | 'size', value: string): Promise<string> {
+    const existing = itemOptions.find(option => option.type === type
+      && option.value.trim().toLocaleLowerCase('de') === value.trim().toLocaleLowerCase('de'));
+    if (existing) return existing.value;
+    const created: ItemOption = await createItemOption({ type, value: value.trim() });
+    setItemOptions(previous => [...previous.filter(option => option.id !== created.id), created]);
+    return created.value;
+  }
+
   const categories = itemOptions.filter(
     (option) => option.type === 'category'
   );
@@ -95,21 +111,10 @@ export default function ItemForm({
       <h3>Neues Kleidungsstück anlegen</h3>
       {optionsError && <div className="error-box" role="alert">{optionsError}</div>}
 
-      <form className="form-grid" onSubmit={onSubmit}>
-        <select
-          name="owner_customer_id"
-          value={formData.owner_customer_id}
-          onChange={onChange}
-          required
-        >
-          <option value="">Eigentümer auswählen</option>
-          {customers.map((customer) => (
-            <option key={customer.id} value={customer.id}>
-              {customer.customer_number} - {customer.first_name} {customer.last_name}
-            </option>
-          ))}
-        </select>
+      <form className="form-grid compact-item-form" onSubmit={onSubmit}>
+        <CustomerPicker customers={customers} value={formData.owner_customer_id} onChange={onOwnerChange} />
 
+        <label className="item-title">Titel
         <input
           name="title"
           placeholder="Titel"
@@ -117,93 +122,8 @@ export default function ItemForm({
           onChange={onChange}
           required
         />
-
-        <textarea
-          name="description"
-          placeholder="Beschreibung"
-          value={formData.description}
-          onChange={onChange}
-          rows={4}
-        />
-
-        <select
-          name="category"
-          value={formData.category}
-          onChange={onChange}
-          disabled={loadingOptions}
-        >
-          <option value="">
-            {loadingOptions
-              ? 'Kategorien werden geladen...'
-              : 'Kategorie auswählen'}
-          </option>
-
-          {categories.map((option) => (
-            <option key={option.id} value={option.value}>
-              {option.value}
-            </option>
-          ))}
-        </select>
-
-        <select
-          name="size"
-          value={formData.size}
-          onChange={onChange}
-          disabled={loadingOptions}
-        >
-          <option value="">
-            {loadingOptions
-              ? 'Größen werden geladen...'
-              : 'Größe auswählen'}
-          </option>
-
-          {sizeOptions.map((option) => (
-            <option key={option.id} value={option.value}>
-              {option.value}
-            </option>
-          ))}
-        </select>
-
-        <select
-          name="brand"
-          value={formData.brand}
-          onChange={onChange}
-          disabled={loadingOptions}
-        >
-          <option value="">
-            {loadingOptions
-              ? 'Marken werden geladen...'
-              : 'Marke auswählen'}
-          </option>
-
-          {brandOptions.map((option) => (
-            <option key={option.id} value={option.value}>
-              {option.value}
-            </option>
-          ))}
-        </select>
-
-
-
-        <select
-          name="color"
-          value={formData.color}
-          onChange={onChange}
-          disabled={loadingOptions}
-        >
-          <option value="">
-            {loadingOptions
-              ? 'Farben werden geladen...'
-              : 'Farbe auswählen'}
-          </option>
-
-          {colorOptions.map((option) => (
-            <option key={option.id} value={option.value}>
-              {option.value}
-            </option>
-          ))}
-        </select>
-
+        </label>
+        <label className="item-price">Preis (€)
         <input
           name="price"
           type="number"
@@ -213,6 +133,41 @@ export default function ItemForm({
           onChange={onChange}
           required
         />
+        </label>
+
+        <label className="item-description">Beschreibung
+        <textarea
+          name="description"
+          placeholder="Beschreibung"
+          value={formData.description}
+          onChange={onChange}
+          rows={2}
+        />
+        </label>
+
+        <OptionPicker label="Kategorie" name="category" value={formData.category}
+          options={categories.map(option => option.value)} disabled={loadingOptions}
+          onChange={value => onOptionChange('category', value)}
+          onCreate={value => addItemOption('category', value)} />
+
+        <OptionPicker label="Größe" name="size" value={formData.size}
+          options={sizeOptions.map(option => option.value)} disabled={loadingOptions}
+          onChange={value => onOptionChange('size', value)}
+          onCreate={value => addItemOption('size', value)} />
+
+        <OptionPicker label="Marke" name="brand" value={formData.brand}
+          options={brandOptions.map(option => option.value)} disabled={loadingOptions}
+          onChange={value => onOptionChange('brand', value)}
+          onCreate={value => addItemOption('brand', value)} />
+
+
+
+        <OptionPicker label="Farbe" name="color" value={formData.color}
+          options={colorOptions.map(option => option.value)} disabled={loadingOptions}
+          onChange={value => onOptionChange('color', value)}
+          onCreate={value => addItemOption('color', value)} />
+
+
 
         <div className="form-group image-upload-group">
           <label>Bild</label>

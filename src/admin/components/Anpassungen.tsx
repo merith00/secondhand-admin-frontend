@@ -18,6 +18,11 @@ const optionGroups: {
     title: string;
     placeholder: string;
 }[] = [
+{
+            type: 'brand',
+            title: 'Marken',
+            placeholder: 'Neue Marke',
+        },
         {
             type: 'category',
             title: 'Kategorien',
@@ -27,11 +32,6 @@ const optionGroups: {
             type: 'size',
             title: 'Größen',
             placeholder: 'Neue Größe',
-        },
-        {
-            type: 'brand',
-            title: 'Marken',
-            placeholder: 'Neue Marke',
         },
         {
             type: 'color',

@@ -37,7 +37,6 @@ export default function CustomerForm({
         placeholder="Nachname"
         value={formData.last_name}
         onChange={onChange}
-        required
       />
 
       <input

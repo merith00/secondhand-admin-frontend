@@ -1,3 +1,4 @@
+import EntryDialog from './components/EntryDialog';
 import ItemDetailPage from './components/ItemDetailPage';
 import { App as NativeApp } from '@capacitor/app';
 import type { PluginListenerHandle } from '@capacitor/core';
@@ -73,7 +74,9 @@ function App() {
   const [loadingShopOrders, setLoadingShopOrders] = useState(false);
   const [selectedItemImage, setSelectedItemImage] = useState<File | null>(null);
 
-  const [showCustomerForm, setShowCustomerForm] = useState(true);
+  const [showCustomerForm, setShowCustomerForm] = useState(false);
+  const [savingEntry, setSavingEntry] = useState(false);
+  const [entrySuccess, setEntrySuccess] = useState('');
 
   const [imagePreview, setImagePreview] = useState('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -259,6 +262,8 @@ function App() {
     e.preventDefault();
     if (savingRef.current) return;
     savingRef.current = true;
+    setSavingEntry(true);
+    setEntrySuccess('');
 
     try {
       setError('');
@@ -276,11 +281,13 @@ function App() {
         email: '',
       });
 
+      setEntrySuccess('Kunde gespeichert. Du kannst den nächsten Kunden anlegen.');
       await refreshData();
     } catch (err: unknown) {
       setError(errorMessage(err, 'Fehler beim Speichern des Kunden'));
     } finally {
       savingRef.current = false;
+      setSavingEntry(false);
     }
   }
 
@@ -288,6 +295,8 @@ function App() {
     e.preventDefault();
     if (savingRef.current) return;
     savingRef.current = true;
+    setSavingEntry(true);
+    setEntrySuccess('');
 
     try {
       setError('');
@@ -315,7 +324,7 @@ function App() {
 
 
       setItemFormData({
-        owner_customer_id: '',
+        owner_customer_id: itemFormData.owner_customer_id,
         title: '',
         description: '',
         category: '',
@@ -330,12 +339,13 @@ function App() {
       setImagePreview('');
 
       await refreshData();
-      setShowItemModal(false);
+      setEntrySuccess('Kleidungsstück gespeichert. Du kannst das nächste Stück anlegen.');
       if (uploadWarning) setError(uploadWarning);
     } catch (err: unknown) {
       setError(errorMessage(err, 'Fehler beim Speichern des Kleidungsstücks'));
     } finally {
       savingRef.current = false;
+      setSavingEntry(false);
     }
   }
 
@@ -450,6 +460,8 @@ function App() {
 
     setSelectedItemImage(null);
     setImagePreview('');
+    setError('');
+    setEntrySuccess('');
     setShowItemModal(true);
   }
 
@@ -491,8 +503,9 @@ function App() {
   backAction.current = () => {
     if (savingRef.current || isUploadingImage) return;
     if (showExitDialog) { setShowExitDialog(false); return; }
+    if (showCustomerForm) return;
     if (showItemModal) {
-      if (window.confirm('Kleidungsstück-Formular schließen? Nicht gespeicherte Eingaben werden verworfen.')) setShowItemModal(false);
+      // Das Anlageformular bleibt bis zum Schließen über das X geöffnet.
       return;
     }
     if (!window.dispatchEvent(new Event('admin:before-back', { cancelable: true }))) return;
@@ -526,29 +539,10 @@ function App() {
 
       {activeView === 'customers' && (
         <div className="customer-page">
-          <div className="content-grid ">
-            <div className="card">
-              <div
-                className="card-header clickable"
-                onClick={() => setShowCustomerForm((prev) => !prev)}
-              >
-                <h3>Neuen Kunden anlegen</h3>
-
-                <span className={`chevron ${showCustomerForm ? 'open' : ''}`}>
-                  ▼
-                </span>
-              </div>
-
-              {showCustomerForm && (
-                <CustomerForm
-                  formData={customerFormData}
-                  onChange={handleCustomerChange}
-                  onSubmit={handleCustomerSubmit}
-                />
-              )}
-            </div>
-
-
+          <div className="table-page-actions">
+            <button type="button" className="primary-btn" onClick={() => { setError(''); setEntrySuccess(''); setShowCustomerForm(true); }}>Neuer Kunde</button>
+          </div>
+          <div>
             <CustomerCreditsTable
               credits={customerCredits}
               loading={loadingCustomerCredits}
@@ -573,22 +567,10 @@ function App() {
       )}
 
       {activeView === 'items' && (
-        <div className="content-grid">
-          <ItemForm
-            formData={itemFormData}
-            customers={customers}
-            selectedImage={selectedItemImage}
-            onImageChange={handleItemImageChange}
-            onChange={handleItemChange}
-            onCheckboxChange={handleItemCheckboxChange}
-            onSubmit={handleItemSubmit}
-            onTakePhoto={handleTakePhoto}
-            onPickPhoto={handlePickPhoto}
-            imagePreview={imagePreview}
-            isUploadingImage={isUploadingImage}
-            isNativeMobile={isNativeMobile}
-          />
-
+        <div>
+          <div className="table-page-actions">
+            <button type="button" className="primary-btn" onClick={() => { setError(''); setEntrySuccess(''); setShowItemModal(true); }}>Neues Kleidungsstück</button>
+          </div>
           <ItemTable
             items={items}
             loading={loadingItems}
@@ -673,19 +655,20 @@ function App() {
       )}
 
 
+      {showCustomerForm && (
+        <EntryDialog title="Neuen Kunden anlegen" busy={savingEntry} error={error} success={entrySuccess}
+          onClose={() => { setShowCustomerForm(false); setError(''); setEntrySuccess(''); }}>
+          <CustomerForm formData={customerFormData} onChange={handleCustomerChange} onSubmit={handleCustomerSubmit} />
+        </EntryDialog>
+      )}
       {showItemModal && (
-        <div className="modal-backdrop">
-          <div className="modal-content">
-            <button
-              className="modal-close-btn"
-              onClick={() => setShowItemModal(false)}
-            >
-              ✕
-            </button>
-
+        <EntryDialog title="Neues Kleidungsstück anlegen" busy={savingEntry || isUploadingImage} error={error} success={entrySuccess}
+          onClose={() => { setShowItemModal(false); setError(''); setEntrySuccess(''); }}>
             <ItemForm
               formData={itemFormData}
               customers={customers}
+              onOwnerChange={(id) => setItemFormData(previous => ({ ...previous, owner_customer_id: id }))}
+              onOptionChange={(name, value) => setItemFormData(previous => ({ ...previous, [name]: value }))}
               selectedImage={selectedItemImage}
               onImageChange={handleItemImageChange}
               onChange={handleItemChange}
@@ -697,8 +680,8 @@ function App() {
               isUploadingImage={isUploadingImage}
               isNativeMobile={isNativeMobile}
             />
-          </div>
-        </div>
+
+        </EntryDialog>
       )}
     </Layout>
   );

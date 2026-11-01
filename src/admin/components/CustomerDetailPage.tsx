@@ -1,3 +1,4 @@
+import CustomerContactEditor from './CustomerContactEditor';
 import { Capacitor } from '@capacitor/core';
 import { takePhotoWithCamera, pickPhotoFromGallery, webPathToBlob } from '../../utils/camera';
 import { errorMessage } from '../../utils/errors';
@@ -320,10 +321,7 @@ export default function CustomerDetailPage({
         <section className="card">
           <div className="customer-info-grid">
             <div>
-              <h2>{customer.first_name} {customer.last_name}</h2>
-              <p><strong>Kundennummer:</strong> {customer.customer_number}</p>
-              <p><strong>Telefon:</strong> {customer.phone || '-'}</p>
-              <p><strong>E-Mail:</strong> {customer.email || '-'}</p>
+              <CustomerContactEditor key={customer.id} customer={customer} onCustomerUpdated={onCustomerUpdated} />
               <p>
                 <strong>Aktuelles Guthaben:{' '}
                   <span className={creditBalance > 0 ? 'credit-positive' : creditBalance < 0 ? 'credit-negative' : 'credit-neutral'}>
